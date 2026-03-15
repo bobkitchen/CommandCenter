@@ -11,10 +11,10 @@ struct DashboardView: View {
                 ScrollView {
                     if #available(iOS 26, *) {
                         GlassEffectContainer(spacing: 16) {
-                            dashboardGrid
+                            dashboardContent
                         }
                     } else {
-                        dashboardGrid
+                        dashboardContent
                     }
                 }
                 .refreshable {
@@ -26,11 +26,8 @@ struct DashboardView: View {
         }
     }
 
-    private var dashboardGrid: some View {
-        LazyVGrid(
-            columns: [GridItem(.flexible(), spacing: 16)],
-            spacing: 16
-        ) {
+    private var dashboardContent: some View {
+        VStack(spacing: 16) {
             WeatherCard()
             CalendarCard()
             CrisisCard()

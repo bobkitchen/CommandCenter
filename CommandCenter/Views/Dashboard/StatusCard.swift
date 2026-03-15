@@ -1,10 +1,44 @@
 import SwiftUI
 
+// MARK: - Flexible Codable helpers
+
+/// Decodes a value that might be String, Int, or Double from the API
+struct FlexString: Codable {
+    let value: String
+    init(from decoder: Decoder) throws {
+        let c = try decoder.singleValueContainer()
+        if let s = try? c.decode(String.self) { value = s }
+        else if let d = try? c.decode(Double.self) { value = String(d) }
+        else if let b = try? c.decode(Bool.self) { value = String(b) }
+        else { value = "" }
+    }
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.singleValueContainer()
+        try c.encode(value)
+    }
+}
+
+/// Decodes a number that might be Int, Double, or String from the API
+struct FlexNumber: Codable {
+    let value: Double
+    init(from decoder: Decoder) throws {
+        let c = try decoder.singleValueContainer()
+        if let d = try? c.decode(Double.self) { value = d }
+        else if let s = try? c.decode(String.self) { value = Double(s) ?? 0 }
+        else { value = 0 }
+    }
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.singleValueContainer()
+        try c.encode(value)
+    }
+    var intValue: Int { Int(value) }
+}
+
 // MARK: - API Response Models (matches /api/openclaw-status)
 
 struct OpenClawStatusResponse: Codable {
-    let timestamp: Double?
-    let fetchTime: Double?
+    let timestamp: FlexNumber?
+    let fetchTime: FlexNumber?
     let gateway: GatewayStatus?
     let model: ModelInfo?
     let mainSession: MainSessionInfo?
@@ -18,34 +52,34 @@ struct OpenClawStatusResponse: Codable {
 
 struct GatewayStatus: Codable {
     let connected: Bool?
-    let latency: Double?
-    let uptime: Double?
-    let pid: Int?
-    let memory: Double?
-    let cpu: Double?
-    let restarts: Int?
+    let latency: FlexNumber?
+    let uptime: FlexNumber?
+    let pid: FlexNumber?
+    let memory: FlexNumber?
+    let cpu: FlexNumber?
+    let restarts: FlexNumber?
 }
 
 struct ModelInfo: Codable {
     let `default`: String?
-    let contextWindow: Int?
+    let contextWindow: FlexNumber?
 }
 
 struct MainSessionInfo: Codable {
-    let percentUsed: Double?
-    let totalTokens: Int?
-    let remainingTokens: Int?
-    let contextTokens: Int?
-    let inputTokens: Int?
-    let outputTokens: Int?
-    let cacheRead: Int?
-    let cacheWrite: Int?
+    let percentUsed: FlexNumber?
+    let totalTokens: FlexNumber?
+    let remainingTokens: FlexNumber?
+    let contextTokens: FlexNumber?
+    let inputTokens: FlexNumber?
+    let outputTokens: FlexNumber?
+    let cacheRead: FlexNumber?
+    let cacheWrite: FlexNumber?
     let model: String?
-    let lastActivity: Double?
+    let lastActivity: FlexNumber?
 }
 
 struct SessionsSummary: Codable {
-    let total: Int?
+    let total: FlexNumber?
     let details: [SessionDetail]?
 }
 
@@ -53,44 +87,44 @@ struct SessionDetail: Codable {
     let key: String?
     let agent: String?
     let model: String?
-    let percentUsed: Double?
-    let totalTokens: Int?
-    let remainingTokens: Int?
-    let inputTokens: Int?
-    let outputTokens: Int?
-    let cacheRead: Int?
-    let cacheWrite: Int?
-    let lastActivity: Double?
-    let age: Double?
+    let percentUsed: FlexNumber?
+    let totalTokens: FlexNumber?
+    let remainingTokens: FlexNumber?
+    let inputTokens: FlexNumber?
+    let outputTokens: FlexNumber?
+    let cacheRead: FlexNumber?
+    let cacheWrite: FlexNumber?
+    let lastActivity: FlexNumber?
+    let age: FlexNumber?
 }
 
 struct AgentSummary: Codable {
     let agentId: String?
-    let sessionCount: Int?
-    let mostRecent: Double?
+    let sessionCount: FlexNumber?
+    let mostRecent: FlexNumber?
     let topSession: AgentTopSession?
 }
 
 struct AgentTopSession: Codable {
     let key: String?
-    let percentUsed: Double?
-    let totalTokens: Int?
+    let percentUsed: FlexNumber?
+    let totalTokens: FlexNumber?
     let model: String?
 }
 
 struct HeartbeatInfo: Codable {
     let active: [HeartbeatAgent]?
-    let total: Int?
+    let total: FlexNumber?
 }
 
 struct HeartbeatAgent: Codable {
     let agentId: String?
-    let every: String?
+    let every: FlexString?
 }
 
 struct CronInfo: Codable {
-    let total: Int?
-    let enabled: Int?
+    let total: FlexNumber?
+    let enabled: FlexNumber?
     let jobs: [CronJob]?
 }
 
@@ -107,7 +141,7 @@ struct CronSchedule: Codable {
     let kind: String?
     let expr: String?
     let tz: String?
-    let everyMs: Double?
+    let everyMs: FlexNumber?
 }
 
 struct PM2Info: Codable {
@@ -117,19 +151,19 @@ struct PM2Info: Codable {
 
 struct PM2Process: Codable {
     let name: String?
-    let pid: Int?
+    let pid: FlexNumber?
     let status: String?
-    let uptime: Double?
-    let memory: Double?
-    let cpu: Double?
-    let restarts: Int?
+    let uptime: FlexNumber?
+    let memory: FlexNumber?
+    let cpu: FlexNumber?
+    let restarts: FlexNumber?
 }
 
 struct PM2ProcessStatus: Codable {
     let status: String?
-    let uptime: Double?
-    let memory: Double?
-    let restarts: Int?
+    let uptime: FlexNumber?
+    let memory: FlexNumber?
+    let restarts: FlexNumber?
 }
 
 // MARK: - StatusCard View
@@ -138,6 +172,7 @@ struct StatusCard: View {
     @State private var status: OpenClawStatusResponse?
     @State private var isLoading = true
     @State private var loadError = false
+    @State private var errorDetail: String?
     @State private var expandedSection: String?
 
     private var isConnected: Bool {
@@ -170,8 +205,16 @@ struct StatusCard: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 80)
             } else if loadError {
-                ErrorRetryView(message: "Unable to connect") {
-                    Task { await loadStatus() }
+                VStack(spacing: 6) {
+                    ErrorRetryView(message: "Unable to connect") {
+                        Task { await loadStatus() }
+                    }
+                    if let detail = errorDetail {
+                        Text(detail)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(AppColors.muted)
+                            .multilineTextAlignment(.center)
+                    }
                 }
                 .frame(maxWidth: .infinity, minHeight: 60)
             } else if let status {
@@ -189,7 +232,7 @@ struct StatusCard: View {
                 }
 
                 // Cron jobs
-                if let cron = status.cron, (cron.total ?? 0) > 0 {
+                if let cron = status.cron, (cron.total?.intValue ?? 0) > 0 {
                     cronSection(cron)
                 }
 
@@ -211,11 +254,11 @@ struct StatusCard: View {
     private func gatewaySection(_ status: OpenClawStatusResponse) -> some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
             miniStat(label: "Model", value: shortenModel(status.model?.default))
-            miniStat(label: "Uptime", value: formatUptime(status.gateway?.uptime))
-            miniStat(label: "Latency", value: formatLatency(status.gateway?.latency))
-            miniStat(label: "Sessions", value: "\(status.sessions?.total ?? 0)")
-            miniStat(label: "Cron", value: "\(status.cron?.enabled ?? 0)/\(status.cron?.total ?? 0)")
-            miniStat(label: "Heartbeats", value: "\(status.heartbeat?.total ?? 0)")
+            miniStat(label: "Uptime", value: formatUptime(status.gateway?.uptime?.value))
+            miniStat(label: "Latency", value: formatLatency(status.gateway?.latency?.value))
+            miniStat(label: "Sessions", value: "\(status.sessions?.total?.intValue ?? 0)")
+            miniStat(label: "Cron", value: "\(status.cron?.enabled?.intValue ?? 0)/\(status.cron?.total?.intValue ?? 0)")
+            miniStat(label: "Heartbeats", value: "\(status.heartbeat?.total?.intValue ?? 0)")
         }
     }
 
@@ -229,9 +272,9 @@ struct StatusCard: View {
                     .font(.caption.weight(.medium))
                     .foregroundStyle(AppColors.text)
                 Spacer()
-                Text("\(Int(main.percentUsed ?? 0))%")
+                Text("\(main.percentUsed?.intValue ?? 0)%")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(contextColor(main.percentUsed ?? 0))
+                    .foregroundStyle(contextColor(main.percentUsed?.value ?? 0))
             }
 
             GeometryReader { geo in
@@ -239,17 +282,17 @@ struct StatusCard: View {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(AppColors.muted.opacity(0.2))
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(contextColor(main.percentUsed ?? 0))
-                        .frame(width: geo.size.width * min(CGFloat(main.percentUsed ?? 0) / 100.0, 1.0))
+                        .fill(contextColor(main.percentUsed?.value ?? 0))
+                        .frame(width: geo.size.width * min(CGFloat(main.percentUsed?.value ?? 0) / 100.0, 1.0))
                 }
             }
             .frame(height: 6)
 
             HStack(spacing: 12) {
-                tokenLabel("In", value: main.inputTokens)
-                tokenLabel("Out", value: main.outputTokens)
-                tokenLabel("Cache R", value: main.cacheRead)
-                tokenLabel("Cache W", value: main.cacheWrite)
+                tokenLabel("In", value: main.inputTokens?.intValue)
+                tokenLabel("Out", value: main.outputTokens?.intValue)
+                tokenLabel("Cache R", value: main.cacheRead?.intValue)
+                tokenLabel("Cache W", value: main.cacheWrite?.intValue)
             }
         }
         .padding(10)
@@ -264,7 +307,7 @@ struct StatusCard: View {
         VStack(alignment: .leading, spacing: 8) {
             sectionHeader("Agents", icon: "cpu", count: agents.count)
 
-            ForEach(agents.filter { ($0.sessionCount ?? 0) > 0 }, id: \.agentId) { agent in
+            ForEach(agents.filter { ($0.sessionCount?.intValue ?? 0) > 0 }, id: \.agentId) { agent in
                 HStack(spacing: 8) {
                     Circle()
                         .fill(agentColor(agent))
@@ -282,7 +325,7 @@ struct StatusCard: View {
                             .foregroundStyle(AppColors.muted)
                     }
 
-                    Text("\(agent.sessionCount ?? 0)s")
+                    Text("\(agent.sessionCount?.intValue ?? 0)s")
                         .font(.caption2.weight(.medium))
                         .foregroundStyle(AppColors.muted)
                         .frame(width: 24, alignment: .trailing)
@@ -297,7 +340,7 @@ struct StatusCard: View {
     private func cronSection(_ cron: CronInfo) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             sectionHeader("Cron Jobs", icon: "clock.arrow.circlepath",
-                          count: cron.enabled ?? 0, total: cron.total ?? 0)
+                          count: cron.enabled?.intValue ?? 0, total: cron.total?.intValue ?? 0)
 
             if let jobs = cron.jobs?.filter({ $0.enabled == true }).prefix(5) {
                 ForEach(Array(jobs), id: \.stableId) { job in
@@ -344,12 +387,12 @@ struct StatusCard: View {
                     Spacer()
 
                     if let pid = proc.pid {
-                        Text("PID \(pid)")
+                        Text("PID \(pid.intValue)")
                             .font(.caption2)
                             .foregroundStyle(AppColors.muted)
                     }
 
-                    Text(formatUptime(proc.uptime))
+                    Text(formatUptime(proc.uptime?.value))
                         .font(.caption2)
                         .foregroundStyle(AppColors.muted)
                 }
@@ -441,7 +484,7 @@ struct StatusCard: View {
     }
 
     private func agentColor(_ agent: AgentSummary) -> Color {
-        guard let recent = agent.mostRecent else { return AppColors.muted }
+        guard let recent = agent.mostRecent?.value else { return AppColors.muted }
         let age = Date().timeIntervalSince1970 * 1000 - recent
         if age < 600_000 { return AppColors.success }      // < 10 min
         if age < 3_600_000 { return AppColors.warning }    // < 1 hour
@@ -453,7 +496,7 @@ struct StatusCard: View {
         case "cron":
             return sched.expr ?? "—"
         case "every":
-            if let ms = sched.everyMs {
+            if let ms = sched.everyMs?.value {
                 return "every \(formatUptime(ms))"
             }
             return "recurring"
@@ -467,11 +510,38 @@ struct StatusCard: View {
     private func loadStatus() async {
         isLoading = true
         loadError = false
+        errorDetail = nil
         do {
             status = try await APIClient.shared.get("/api/openclaw-status")
+            print("[StatusCard] OK: connected=\(isConnected), model=\(status?.model?.default ?? "nil")")
+        } catch let apiError as APIError {
+            loadError = true
+            errorDetail = apiError.errorDescription
+            print("[StatusCard] APIError: \(apiError.errorDescription ?? "unknown")")
+        } catch let decodingError as DecodingError {
+            loadError = true
+            errorDetail = describeDecodingError(decodingError)
+            print("[StatusCard] DecodingError: \(errorDetail ?? "unknown")")
         } catch {
             loadError = true
+            errorDetail = error.localizedDescription
+            print("[StatusCard] Error: \(error)")
         }
         isLoading = false
+    }
+
+    private func describeDecodingError(_ error: DecodingError) -> String {
+        switch error {
+        case .keyNotFound(let key, let ctx):
+            return "Missing key '\(key.stringValue)' at \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+        case .typeMismatch(let type, let ctx):
+            return "Type mismatch for \(type) at \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+        case .valueNotFound(let type, let ctx):
+            return "Null value for \(type) at \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+        case .dataCorrupted(let ctx):
+            return "Data corrupted: \(ctx.debugDescription)"
+        @unknown default:
+            return "Unknown decoding error"
+        }
     }
 }
