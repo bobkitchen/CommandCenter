@@ -8,7 +8,7 @@ struct FileEntry: Codable, Identifiable {
     let extension_: String?
 
     var id: String { name }
-    var isDirectory: Bool { type == "directory" }
+    var isDirectory: Bool { type == "directory" || type == "dir" }
 
     var formattedSize: String {
         guard let size else { return "" }
