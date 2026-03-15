@@ -3,6 +3,7 @@ import SwiftUI
 struct CrisisCard: View {
     @State private var crises: [Crisis] = []
     @State private var isLoading = true
+    @State private var loadError = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -13,6 +14,11 @@ struct CrisisCard: View {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 60)
+            } else if loadError {
+                ErrorRetryView(message: "Unable to load crises") {
+                    Task { await loadCrises() }
+                }
+                .frame(maxWidth: .infinity, minHeight: 60)
             } else if crises.isEmpty {
                 Text("No active crises")
                     .font(.subheadline)
@@ -67,10 +73,14 @@ struct CrisisCard: View {
     }
 
     private func loadCrises() async {
+        isLoading = true
+        loadError = false
         do {
             let response: CrisesResponse = try await APIClient.shared.get("/api/crises")
             crises = response.crises
-        } catch {}
+        } catch {
+            loadError = true
+        }
         isLoading = false
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-@Observable
+@MainActor @Observable
 final class ChatService {
     var messages: [Message] = []
     var isTyping = false
@@ -17,13 +17,9 @@ final class ChatService {
                 "/api/chat/history",
                 queryItems: [URLQueryItem(name: "limit", value: "200")]
             )
-            await MainActor.run {
-                self.messages = response.messages
-            }
+            self.messages = response.messages
         } catch {
-            await MainActor.run {
-                self.error = error.localizedDescription
-            }
+            self.error = error.localizedDescription
         }
     }
 
@@ -39,9 +35,7 @@ final class ChatService {
             timestamp: "\(Date().timeIntervalSince1970 * 1000)",
             channel: nil
         )
-        await MainActor.run {
-            self.messages.append(tempMessage)
-        }
+        self.messages.append(tempMessage)
 
         do {
             let _: SendResponse = try await APIClient.shared.post(
@@ -51,20 +45,18 @@ final class ChatService {
             // Fetch to get server-side message with real ID
             await loadHistory()
         } catch {
-            await MainActor.run {
-                self.error = error.localizedDescription
-            }
+            self.error = error.localizedDescription
         }
     }
 
     func startPolling() {
         stopPolling()
-        pollTask = Task {
+        pollTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(3))
                 guard !Task.isCancelled else { break }
-                await loadHistory()
-                await checkTyping()
+                await self?.loadHistory()
+                await self?.checkTyping()
             }
         }
     }
@@ -77,9 +69,7 @@ final class ChatService {
     private func checkTyping() async {
         do {
             let status: ChatStatus = try await APIClient.shared.get("/api/chat/status")
-            await MainActor.run {
-                self.isTyping = status.typing ?? false
-            }
+            self.isTyping = status.typing ?? false
         } catch {
             // Silently ignore typing status errors
         }

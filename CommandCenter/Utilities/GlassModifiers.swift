@@ -46,6 +46,19 @@ struct GlassCardInteractive: ViewModifier {
     }
 }
 
+/// Glass-styled button: uses glassProminent on iOS 26+, accent background on older.
+struct GlassButtonStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content.buttonStyle(.glassProminent)
+        } else {
+            content
+                .foregroundStyle(.white)
+                .background(AppColors.accent, in: RoundedRectangle(cornerRadius: 14))
+        }
+    }
+}
+
 extension View {
     func glassCard(cornerRadius: CGFloat = 20, tint: Color? = nil) -> some View {
         modifier(GlassCard(cornerRadius: cornerRadius, tint: tint))

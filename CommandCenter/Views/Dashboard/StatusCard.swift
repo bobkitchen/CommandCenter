@@ -10,6 +10,7 @@ struct OpenClawStatus: Codable {
 struct StatusCard: View {
     @State private var status: OpenClawStatus?
     @State private var isLoading = true
+    @State private var loadError = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -20,20 +21,17 @@ struct StatusCard: View {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 60)
+            } else if loadError {
+                ErrorRetryView(message: "Unable to connect") {
+                    Task { await loadStatus() }
+                }
+                .frame(maxWidth: .infinity, minHeight: 60)
             } else if let status {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                     statusItem(label: "Version", value: status.version ?? "—")
                     statusItem(label: "Uptime", value: status.uptime ?? "—")
                     statusItem(label: "Model", value: shortenModel(status.model))
                     statusItem(label: "Sessions", value: "\(status.sessions ?? 0)")
-                }
-            } else {
-                HStack(spacing: 8) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(AppColors.danger)
-                    Text("Unable to connect")
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.muted)
                 }
             }
         }
@@ -58,16 +56,19 @@ struct StatusCard: View {
 
     private func shortenModel(_ model: String?) -> String {
         guard let model else { return "—" }
-        // "anthropic/claude-opus-4-6" → "claude-opus-4"
         return model
             .replacingOccurrences(of: "anthropic/", with: "")
             .replacingOccurrences(of: "openai/", with: "")
     }
 
     private func loadStatus() async {
+        isLoading = true
+        loadError = false
         do {
             status = try await APIClient.shared.get("/api/openclaw-status")
-        } catch {}
+        } catch {
+            loadError = true
+        }
         isLoading = false
     }
 }

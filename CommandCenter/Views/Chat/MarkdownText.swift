@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// Renders basic Markdown as styled Text views.
-/// Supports: **bold**, `code`, # headers, - lists, [links](url)
+/// Supports: **bold**, `code`, # headers, - lists, [links](url) (tappable)
 struct MarkdownText: View {
     let source: String
+    @Environment(\.openURL) private var openURL
 
     init(_ source: String) {
         self.source = source
@@ -43,55 +44,66 @@ struct MarkdownText: View {
             HStack(alignment: .top, spacing: 6) {
                 Text("•")
                     .foregroundStyle(AppColors.muted)
-                styledInline(String(trimmed.dropFirst(2)))
-                    .foregroundStyle(AppColors.text)
+                lineWithLinks(String(trimmed.dropFirst(2)))
             }
         } else if trimmed.hasPrefix("```") {
-            // Simple code block marker — just show as-is in monospace
             Text(trimmed)
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(AppColors.muted)
         } else {
-            styledInline(trimmed)
+            lineWithLinks(trimmed)
+        }
+    }
+
+    /// Renders a line that may contain tappable links as an HStack
+    @ViewBuilder
+    private func lineWithLinks(_ text: String) -> some View {
+        let segments = parseSegments(text)
+        let hasLinks = segments.contains { $0.url != nil }
+
+        if hasLinks {
+            // Use a flow layout with tappable link buttons
+            HStack(spacing: 0) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                    if let url = segment.url {
+                        Button {
+                            openURL(url)
+                        } label: {
+                            Text(segment.text)
+                                .foregroundStyle(AppColors.accent)
+                                .underline()
+                        }
+                    } else {
+                        styledInline(segment.text)
+                            .foregroundStyle(AppColors.text)
+                    }
+                }
+            }
+        } else {
+            styledInline(text)
                 .foregroundStyle(AppColors.text)
         }
     }
 
-    /// Parse inline markdown: **bold**, `code`, [links](url)
+    /// Parse inline markdown: **bold**, `code`
     private func styledInline(_ text: String) -> Text {
         var result = Text("")
         var remaining = text[text.startIndex...]
 
         while !remaining.isEmpty {
-            // Bold: **text**
             if remaining.hasPrefix("**"),
                let endRange = remaining[remaining.index(remaining.startIndex, offsetBy: 2)...].range(of: "**") {
                 let content = remaining[remaining.index(remaining.startIndex, offsetBy: 2)..<endRange.lowerBound]
                 result = result + Text(content).bold()
                 remaining = remaining[endRange.upperBound...]
-            }
-            // Inline code: `text`
-            else if remaining.hasPrefix("`"),
-                    let endIdx = remaining[remaining.index(after: remaining.startIndex)...].firstIndex(of: "`") {
+            } else if remaining.hasPrefix("`"),
+                      let endIdx = remaining[remaining.index(after: remaining.startIndex)...].firstIndex(of: "`") {
                 let content = remaining[remaining.index(after: remaining.startIndex)..<endIdx]
                 result = result + Text(content)
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(AppColors.accent)
                 remaining = remaining[remaining.index(after: endIdx)...]
-            }
-            // Link: [text](url) — render as text in accent color
-            else if remaining.hasPrefix("["),
-                    let closeBracket = remaining.firstIndex(of: "]"),
-                    remaining[remaining.index(after: closeBracket)...].hasPrefix("("),
-                    let closeParen = remaining[remaining.index(closeBracket, offsetBy: 2)...].firstIndex(of: ")") {
-                let linkText = remaining[remaining.index(after: remaining.startIndex)..<closeBracket]
-                result = result + Text(linkText)
-                    .foregroundColor(AppColors.accent)
-                    .underline()
-                remaining = remaining[remaining.index(after: closeParen)...]
-            }
-            // Plain character
-            else {
+            } else {
                 let char = remaining[remaining.startIndex]
                 result = result + Text(String(char))
                 remaining = remaining[remaining.index(after: remaining.startIndex)...]
@@ -99,5 +111,46 @@ struct MarkdownText: View {
         }
 
         return result
+    }
+
+    // MARK: - Link parsing
+
+    private struct TextSegment {
+        let text: String
+        let url: URL?
+    }
+
+    /// Split text into segments of plain text and [link](url) pairs
+    private func parseSegments(_ text: String) -> [TextSegment] {
+        var segments: [TextSegment] = []
+        var remaining = text[text.startIndex...]
+
+        while !remaining.isEmpty {
+            if let linkStart = remaining.firstIndex(of: "[") {
+                // Add text before the link
+                if linkStart > remaining.startIndex {
+                    segments.append(TextSegment(text: String(remaining[remaining.startIndex..<linkStart]), url: nil))
+                }
+                // Try to parse [text](url)
+                if let closeBracket = remaining[remaining.index(after: linkStart)...].firstIndex(of: "]"),
+                   remaining[remaining.index(after: closeBracket)...].hasPrefix("("),
+                   let closeParen = remaining[remaining.index(closeBracket, offsetBy: 2)...].firstIndex(of: ")") {
+                    let linkText = String(remaining[remaining.index(after: linkStart)..<closeBracket])
+                    let urlString = String(remaining[remaining.index(closeBracket, offsetBy: 2)..<closeParen])
+                    let url = URL(string: urlString)
+                    segments.append(TextSegment(text: linkText, url: url))
+                    remaining = remaining[remaining.index(after: closeParen)...]
+                } else {
+                    // Not a valid link, treat [ as plain text
+                    segments.append(TextSegment(text: String(remaining[linkStart...linkStart]), url: nil))
+                    remaining = remaining[remaining.index(after: linkStart)...]
+                }
+            } else {
+                segments.append(TextSegment(text: String(remaining), url: nil))
+                break
+            }
+        }
+
+        return segments
     }
 }

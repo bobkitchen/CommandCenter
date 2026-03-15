@@ -3,11 +3,11 @@ import SwiftUI
 struct ChatView: View {
     @State private var chatService = ChatService()
     @State private var messageText = ""
-    @State private var scrollProxy: ScrollViewProxy?
+    @State private var showScrollToBottom = false
 
     var body: some View {
         NavigationStack {
-            ZStack {
+            ZStack(alignment: .bottomTrailing) {
                 AppColors.backgroundGradient
 
                 VStack(spacing: 0) {
@@ -29,10 +29,31 @@ struct ChatView: View {
                             .padding(.vertical, 8)
                         }
                         .scrollDismissesKeyboard(.interactively)
-                        .onAppear { scrollProxy = proxy }
+                        .refreshable {
+                            await chatService.loadHistory()
+                        }
                         .onChange(of: chatService.messages.count) {
                             withAnimation(.easeOut(duration: 0.3)) {
                                 proxy.scrollTo(chatService.visibleMessages.last?.id ?? "typing", anchor: .bottom)
+                            }
+                        }
+                        .overlay(alignment: .bottomTrailing) {
+                            if showScrollToBottom {
+                                Button {
+                                    HapticHelper.light()
+                                    withAnimation {
+                                        proxy.scrollTo(chatService.visibleMessages.last?.id ?? "typing", anchor: .bottom)
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.down.circle.fill")
+                                        .font(.title2)
+                                        .foregroundStyle(AppColors.accent)
+                                        .padding(12)
+                                        .glassCard(cornerRadius: 20)
+                                }
+                                .padding(.trailing, 12)
+                                .padding(.bottom, 8)
+                                .transition(.scale.combined(with: .opacity))
                             }
                         }
                     }
@@ -41,6 +62,7 @@ struct ChatView: View {
                     ChatInputBar(text: $messageText) {
                         let text = messageText
                         messageText = ""
+                        HapticHelper.light()
                         Task {
                             await chatService.send(text)
                         }
