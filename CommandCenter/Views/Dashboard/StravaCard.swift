@@ -43,6 +43,7 @@ struct StravaResponse: Codable {
 struct StravaCard: View {
     @State private var data: StravaResponse?
     @State private var isLoading = true
+    @State private var loadError = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -53,8 +54,12 @@ struct StravaCard: View {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 60)
+            } else if loadError {
+                ErrorRetryView(message: "Unable to load Strava data") {
+                    Task { await loadStrava() }
+                }
+                .frame(maxWidth: .infinity, minHeight: 60)
             } else if let data {
-                // Recent activities
                 if let activities = data.activities, !activities.isEmpty {
                     VStack(spacing: 8) {
                         ForEach(activities.prefix(3)) { activity in
@@ -83,7 +88,6 @@ struct StravaCard: View {
                     }
                 }
 
-                // YTD summary
                 if let ytdRun = data.stats?.ytd_run_totals, let ytdRide = data.stats?.ytd_ride_totals {
                     Divider().overlay(AppColors.border)
                     HStack(spacing: 16) {
@@ -99,10 +103,6 @@ struct StravaCard: View {
                         )
                     }
                 }
-            } else {
-                Text("Unable to load Strava data")
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.muted)
             }
         }
         .padding(16)
@@ -137,9 +137,13 @@ struct StravaCard: View {
     }
 
     private func loadStrava() async {
+        isLoading = true
+        loadError = false
         do {
             data = try await APIClient.shared.get("/api/strava")
-        } catch {}
+        } catch {
+            loadError = true
+        }
         isLoading = false
     }
 }

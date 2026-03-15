@@ -36,6 +36,7 @@ struct AgentSessionsResponse: Codable {
 struct AgentCard: View {
     @State private var sessions: [AgentSession] = []
     @State private var isLoading = true
+    @State private var loadError = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -54,6 +55,11 @@ struct AgentCard: View {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 60)
+            } else if loadError {
+                ErrorRetryView(message: "Unable to load sessions") {
+                    Task { await loadSessions() }
+                }
+                .frame(maxWidth: .infinity, minHeight: 60)
             } else if sessions.isEmpty {
                 Text("No active sessions")
                     .font(.subheadline)
@@ -105,13 +111,17 @@ struct AgentCard: View {
     }
 
     private func loadSessions() async {
+        isLoading = true
+        loadError = false
         do {
             let response: AgentSessionsResponse = try await APIClient.shared.get(
                 "/api/sessions",
                 queryItems: [URLQueryItem(name: "limit", value: "10")]
             )
             sessions = response.sessions ?? []
-        } catch {}
+        } catch {
+            loadError = true
+        }
         isLoading = false
     }
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct CalendarCard: View {
     @State private var events: [CalendarEvent] = []
     @State private var isLoading = true
+    @State private var loadError = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -13,6 +14,11 @@ struct CalendarCard: View {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 60)
+            } else if loadError {
+                ErrorRetryView(message: "Unable to load calendar") {
+                    Task { await loadEvents() }
+                }
+                .frame(maxWidth: .infinity, minHeight: 60)
             } else if events.isEmpty {
                 Text("No upcoming events")
                     .font(.subheadline)
@@ -58,10 +64,14 @@ struct CalendarCard: View {
     }
 
     private func loadEvents() async {
+        isLoading = true
+        loadError = false
         do {
             let response: CalendarResponse = try await APIClient.shared.get("/api/calendar")
             events = response.events
-        } catch {}
+        } catch {
+            loadError = true
+        }
         isLoading = false
     }
 

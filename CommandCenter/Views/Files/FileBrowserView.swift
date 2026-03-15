@@ -6,8 +6,15 @@ struct FileBrowserView: View {
     @State private var workspace = "workspace"
     @State private var isLoading = true
     @State private var selectedFile: FileEntry?
+    @State private var searchText = ""
+    @State private var loadError: String?
 
     private let workspaces = ["workspace", "workspace-sentinel", "workspace-mirror", "workspace-scout"]
+
+    private var filteredEntries: [FileEntry] {
+        if searchText.isEmpty { return entries }
+        return entries.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,7 +24,6 @@ struct FileBrowserView: View {
                 VStack(spacing: 0) {
                     // Workspace picker + breadcrumbs
                     VStack(spacing: 8) {
-                        // Workspace picker
                         HStack {
                             Menu {
                                 ForEach(workspaces, id: \.self) { ws in
@@ -42,7 +48,6 @@ struct FileBrowserView: View {
                         }
                         .padding(.horizontal, 16)
 
-                        // Breadcrumbs
                         if !currentPath.isEmpty {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 4) {
@@ -77,6 +82,12 @@ struct FileBrowserView: View {
                         Spacer()
                         ProgressView()
                         Spacer()
+                    } else if let error = loadError {
+                        Spacer()
+                        ErrorRetryView(message: error) {
+                            Task { await loadDirectory() }
+                        }
+                        Spacer()
                     } else if entries.isEmpty {
                         Spacer()
                         VStack(spacing: 8) {
@@ -89,11 +100,12 @@ struct FileBrowserView: View {
                         Spacer()
                     } else {
                         List {
-                            ForEach(entries) { entry in
+                            ForEach(filteredEntries) { entry in
                                 FileRow(entry: entry)
                                     .listRowBackground(Color.clear)
                                     .contentShape(Rectangle())
                                     .onTapGesture {
+                                        HapticHelper.light()
                                         if entry.isDirectory {
                                             currentPath.append(entry.name)
                                             Task { await loadDirectory() }
@@ -105,11 +117,13 @@ struct FileBrowserView: View {
                         }
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
+                        .refreshable { await loadDirectory() }
                     }
                 }
             }
             .navigationTitle("Files")
             .toolbarColorScheme(.dark, for: .navigationBar)
+            .searchable(text: $searchText, prompt: "Filter files")
             .sheet(item: $selectedFile) { file in
                 FilePreviewView(
                     path: (currentPath + [file.name]).joined(separator: "/"),
@@ -123,6 +137,14 @@ struct FileBrowserView: View {
 
     private func loadDirectory() async {
         isLoading = true
+        loadError = nil
+
+        // Sanitize path components
+        let sanitized = currentPath.filter { !$0.contains("..") && !$0.contains("/") }
+        if sanitized.count != currentPath.count {
+            currentPath = sanitized
+        }
+
         let path = currentPath.isEmpty ? "" : "/" + currentPath.joined(separator: "/")
         var queryItems = [URLQueryItem]()
         if workspace != "workspace" {
@@ -139,6 +161,7 @@ struct FileBrowserView: View {
             }
         } catch {
             entries = []
+            loadError = "Unable to load files"
         }
         isLoading = false
     }

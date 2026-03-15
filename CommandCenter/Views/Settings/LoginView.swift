@@ -2,8 +2,10 @@ import SwiftUI
 
 struct LoginView: View {
     @Environment(AuthService.self) private var authService
+    @Environment(\.scenePhase) private var scenePhase
     @State private var serverURL = ""
     @State private var password = ""
+    @State private var connectivity = ConnectivityService()
 
     var body: some View {
         @Bindable var auth = authService
@@ -86,17 +88,13 @@ struct LoginView: View {
                             .padding(.vertical, 14)
                     }
                 }
-                .if(true) { view in
-                    if #available(iOS 26, *) {
-                        view.buttonStyle(.glassProminent)
-                    } else {
-                        view
-                            .foregroundStyle(.white)
-                            .background(AppColors.accent, in: RoundedRectangle(cornerRadius: 14))
-                    }
-                }
+                .modifier(GlassButtonStyle())
                 .padding(.horizontal, 32)
                 .disabled(authService.isLoading || serverURL.isEmpty || password.isEmpty)
+
+                // Connectivity status
+                connectivityIndicator
+                    .padding(.horizontal, 32)
 
                 Spacer()
                 Spacer()
@@ -105,6 +103,69 @@ struct LoginView: View {
         .onAppear {
             serverURL = authService.serverURL
             password = authService.password
+            connectivity.startMonitoring(serverURL: authService.serverURL)
+        }
+        .onDisappear {
+            connectivity.stopMonitoring()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task { await connectivity.check(serverURL: serverURL) }
+            }
+        }
+        .onChange(of: serverURL) {
+            connectivity.stopMonitoring()
+            connectivity.startMonitoring(serverURL: serverURL)
+        }
+    }
+
+    @ViewBuilder
+    private var connectivityIndicator: some View {
+        switch connectivity.state {
+        case .checking:
+            HStack(spacing: 8) {
+                ProgressView()
+                    .controlSize(.small)
+                Text("Checking connection...")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.muted)
+            }
+
+        case .connected:
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(AppColors.success)
+                    .frame(width: 8, height: 8)
+                Text("Server reachable")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.success)
+            }
+
+        case .disconnected:
+            VStack(spacing: 10) {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(AppColors.danger)
+                        .frame(width: 8, height: 8)
+                    Text("Server unreachable")
+                        .font(.caption)
+                        .foregroundStyle(AppColors.danger)
+                }
+
+                Button {
+                    connectivity.openTailscale()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "network")
+                        Text("Open Tailscale")
+                            .font(.subheadline.weight(.medium))
+                    }
+                    .foregroundStyle(AppColors.accent)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .glassCard(cornerRadius: 12)
+                }
+            }
         }
     }
 }

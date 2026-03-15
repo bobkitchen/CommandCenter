@@ -33,16 +33,7 @@ struct ChatInputBar: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .if(true) { view in
-            if #available(iOS 26, *) {
-                view
-                    .glassEffect(in: .rect(cornerRadius: 22))
-            } else {
-                view
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
-                    .overlay(RoundedRectangle(cornerRadius: 22).stroke(AppColors.border, lineWidth: 1))
-            }
-        }
+        .modifier(GlassCard(cornerRadius: 22))
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
     }

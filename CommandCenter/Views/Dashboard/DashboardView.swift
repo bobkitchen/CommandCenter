@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DashboardView: View {
-    @State private var scrollOffset: CGFloat = 0
+    @State private var refreshID = UUID()
 
     var body: some View {
         NavigationStack {
@@ -16,6 +16,9 @@ struct DashboardView: View {
                     } else {
                         dashboardGrid
                     }
+                }
+                .refreshable {
+                    refreshID = UUID()
                 }
             }
             .navigationTitle("Command Center")
@@ -37,5 +40,6 @@ struct DashboardView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .id(refreshID)
     }
 }

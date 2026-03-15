@@ -24,26 +24,7 @@ struct Message: Codable, Identifiable, Equatable {
     }
 
     var displayTime: String {
-        // Try ISO 8601 first, then Unix timestamp
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let isoFormatterBasic = ISO8601DateFormatter()
-
-        let date: Date?
-        if let d = isoFormatter.date(from: timestamp) {
-            date = d
-        } else if let d = isoFormatterBasic.date(from: timestamp) {
-            date = d
-        } else if let ts = Double(timestamp) {
-            date = Date(timeIntervalSince1970: ts / (ts > 1e12 ? 1000 : 1))
-        } else {
-            date = nil
-        }
-
-        guard let date else { return timestamp }
-        let fmt = DateFormatter()
-        fmt.dateFormat = "h:mm a"
-        return fmt.string(from: date)
+        DateFormatters.formatTime(from: timestamp)
     }
 
     static func == (lhs: Message, rhs: Message) -> Bool { lhs.id == rhs.id }

@@ -23,7 +23,7 @@ struct FileRow: View {
                             .foregroundStyle(AppColors.muted)
                     }
                     if let modified = entry.modified {
-                        Text(formatDate(modified))
+                        Text(DateFormatters.formatRelative(from: modified))
                             .font(.caption2)
                             .foregroundStyle(AppColors.muted)
                     }
@@ -39,25 +39,5 @@ struct FileRow: View {
             }
         }
         .padding(.vertical, 4)
-    }
-
-    private func formatDate(_ str: String) -> String {
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let isoBasic = ISO8601DateFormatter()
-
-        let date: Date?
-        if let d = isoFormatter.date(from: str) {
-            date = d
-        } else if let d = isoBasic.date(from: str) {
-            date = d
-        } else {
-            date = nil
-        }
-
-        guard let date else { return str }
-        let fmt = RelativeDateTimeFormatter()
-        fmt.unitsStyle = .abbreviated
-        return fmt.localizedString(for: date, relativeTo: Date())
     }
 }

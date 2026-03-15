@@ -3,6 +3,7 @@ import SwiftUI
 struct WeatherCard: View {
     @State private var weather: WeatherResponse?
     @State private var isLoading = true
+    @State private var loadError = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -13,6 +14,11 @@ struct WeatherCard: View {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 60)
+            } else if loadError {
+                ErrorRetryView(message: "Unable to load weather") {
+                    Task { await loadWeather() }
+                }
+                .frame(maxWidth: .infinity, minHeight: 60)
             } else if let current = weather?.current {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -60,10 +66,6 @@ struct WeatherCard: View {
                         }
                     }
                 }
-            } else {
-                Text("Unable to load weather")
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.muted)
             }
         }
         .padding(16)
@@ -73,9 +75,13 @@ struct WeatherCard: View {
     }
 
     private func loadWeather() async {
+        isLoading = true
+        loadError = false
         do {
             weather = try await APIClient.shared.get("/api/weather")
-        } catch {}
+        } catch {
+            loadError = true
+        }
         isLoading = false
     }
 

@@ -1,6 +1,6 @@
 import Foundation
 
-@Observable
+@MainActor @Observable
 final class APIClient {
     static let shared = APIClient()
 
@@ -27,7 +27,9 @@ final class APIClient {
     // MARK: - Auth
 
     func login(password: String) async throws -> Bool {
-        let url = URL(string: "\(baseURL)/api/auth/login")!
+        guard let url = URL(string: "\(baseURL)/api/auth/login") else {
+            throw APIError.invalidURL
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -42,7 +44,9 @@ final class APIClient {
     // MARK: - GET
 
     func get<T: Decodable>(_ path: String, queryItems: [URLQueryItem]? = nil) async throws -> T {
-        var components = URLComponents(string: "\(baseURL)\(path)")!
+        guard var components = URLComponents(string: "\(baseURL)\(path)") else {
+            throw APIError.invalidURL
+        }
         if let queryItems, !queryItems.isEmpty {
             components.queryItems = queryItems
         }
@@ -69,7 +73,9 @@ final class APIClient {
     // MARK: - POST
 
     func post<T: Decodable>(_ path: String, body: [String: Any]) async throws -> T {
-        let url = URL(string: "\(baseURL)\(path)")!
+        guard let url = URL(string: "\(baseURL)\(path)") else {
+            throw APIError.invalidURL
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

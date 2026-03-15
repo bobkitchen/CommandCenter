@@ -21,13 +21,8 @@ struct FilePreviewView: View {
                     ProgressView("Loading…")
                         .foregroundStyle(AppColors.muted)
                 } else if let error {
-                    VStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.largeTitle)
-                            .foregroundStyle(AppColors.warning)
-                        Text(error)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.muted)
+                    ErrorRetryView(message: error) {
+                        Task { await loadFile() }
                     }
                 } else if isImage, let imageData, let uiImage = UIImage(data: imageData) {
                     ScrollView {
@@ -66,17 +61,31 @@ struct FilePreviewView: View {
     }
 
     private func loadFile() async {
+        isLoading = true
+        error = nil
+
+        // Sanitize path — reject traversal attempts
+        let components = path.components(separatedBy: "/")
+        guard components.allSatisfy({ !$0.contains("..") }) else {
+            error = "Invalid file path"
+            isLoading = false
+            return
+        }
+
+        let sanitizedPath = components
+            .map { $0.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? $0 }
+            .joined(separator: "/")
+
         var queryItems = [URLQueryItem(name: "content", value: "true")]
         if workspace != "workspace" {
             queryItems.append(URLQueryItem(name: "workspace", value: workspace))
         }
         do {
             let response: FileContentResponse = try await APIClient.shared.get(
-                "/api/files/\(path)",
+                "/api/files/\(sanitizedPath)",
                 queryItems: queryItems
             )
             if response.type == "image" {
-                // Base64 data URL
                 let base64 = response.content
                     .replacingOccurrences(of: #"^data:[^;]+;base64,"#, with: "", options: .regularExpression)
                 if let data = Data(base64Encoded: base64) {
@@ -87,7 +96,7 @@ struct FilePreviewView: View {
                 textContent = response.content
             }
         } catch {
-            self.error = error.localizedDescription
+            self.error = "Unable to load file"
         }
         isLoading = false
     }
