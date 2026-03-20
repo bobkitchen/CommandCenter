@@ -19,7 +19,7 @@ struct MacContentView: View {
                 case .files:
                     FileBrowserView()
                 case .kanban:
-                    placeholderView("Tasks", icon: "rectangle.3.group", subtitle: "Kanban board coming soon")
+                    KanbanBoardView()
                 case .logs:
                     placeholderView("Logs", icon: "terminal", subtitle: "Log viewer coming soon")
                 case nil:
