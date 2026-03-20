@@ -1,0 +1,49 @@
+import SwiftUI
+
+#if os(macOS)
+struct MacContentView: View {
+    @State private var selectedItem: SidebarItem? = .dashboard
+
+    var body: some View {
+        NavigationSplitView {
+            SidebarView(selection: $selectedItem)
+                .frame(minWidth: 180)
+        } detail: {
+            Group {
+                switch selectedItem {
+                case .dashboard:
+                    DashboardView()
+                case .chat:
+                    ChatView()
+                case .files:
+                    FileBrowserView()
+                case .kanban:
+                    placeholderView("Tasks", icon: "rectangle.3.group", subtitle: "Kanban board coming soon")
+                case .logs:
+                    placeholderView("Logs", icon: "terminal", subtitle: "Log viewer coming soon")
+                case nil:
+                    DashboardView()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func placeholderView(_ title: String, icon: String, subtitle: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 48))
+                .foregroundStyle(AppColors.muted)
+            Text(title)
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(AppColors.text)
+            Text(subtitle)
+                .font(.body)
+                .foregroundStyle(AppColors.muted)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppColors.backgroundGradient)
+    }
+}
+#endif

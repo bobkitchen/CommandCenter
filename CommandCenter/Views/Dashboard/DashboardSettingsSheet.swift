@@ -103,7 +103,9 @@ struct DashboardSettingsSheet: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                #if os(iOS)
                 .environment(\.editMode, .constant(.active))
+                #endif
             }
             .navigationTitle("Dashboard Settings")
             #if os(iOS)
