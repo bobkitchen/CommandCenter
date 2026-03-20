@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(WidgetKit)
 import WidgetKit
+#endif
 
 @MainActor @Observable
 final class OpenClawMonitor {
@@ -154,8 +156,10 @@ final class OpenClawMonitor {
             agentCount: status.agents?.count ?? 0,
             lastUpdated: Date()
         )
+        #if canImport(WidgetKit)
         data.save()
         WidgetCenter.shared.reloadAllTimelines()
+        #endif
     }
 
     private func describeDecodingError(_ error: DecodingError) -> String {

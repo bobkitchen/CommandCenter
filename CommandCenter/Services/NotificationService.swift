@@ -1,5 +1,7 @@
 import UserNotifications
+#if os(iOS)
 import UIKit
+#endif
 
 @MainActor
 final class NotificationService {

@@ -1,5 +1,10 @@
 import Foundation
 import SwiftUI
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 enum ConnectivityState: Equatable {
     case checking
@@ -54,7 +59,11 @@ final class ConnectivityService {
 
     func openTailscale() {
         if let url = URL(string: "tailscale://") {
+            #if os(iOS)
             UIApplication.shared.open(url)
+            #elseif os(macOS)
+            NSWorkspace.shared.open(url)
+            #endif
         }
     }
 

@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 /// Renders Markdown as styled Text views.
 /// Supports: **bold**, *italic*, `code`, ```code blocks```, # headers, - lists, [links](url)
@@ -95,7 +98,12 @@ struct MarkdownText: View {
                         .foregroundStyle(AppColors.muted)
                     Spacer()
                     Button {
+                        #if os(iOS)
                         UIPasteboard.general.string = code
+                        #elseif os(macOS)
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(code, forType: .string)
+                        #endif
                         HapticHelper.light()
                     } label: {
                         Image(systemName: "doc.on.doc")
@@ -122,7 +130,12 @@ struct MarkdownText: View {
         )
         .contextMenu {
             Button {
+                #if os(iOS)
                 UIPasteboard.general.string = code
+                #elseif os(macOS)
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(code, forType: .string)
+                #endif
                 HapticHelper.light()
             } label: {
                 Label("Copy Code", systemImage: "doc.on.doc")

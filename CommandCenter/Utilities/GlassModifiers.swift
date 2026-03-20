@@ -8,6 +8,7 @@ struct GlassCard: ViewModifier {
     var tint: Color? = nil
 
     func body(content: Content) -> some View {
+        #if os(iOS)
         if #available(iOS 26, *) {
             if let tint {
                 content
@@ -24,6 +25,14 @@ struct GlassCard: ViewModifier {
                         .stroke(AppColors.border, lineWidth: 1)
                 )
         }
+        #else
+        content
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(AppColors.border, lineWidth: 1)
+            )
+        #endif
     }
 }
 
@@ -32,6 +41,7 @@ struct GlassCardInteractive: ViewModifier {
     var cornerRadius: CGFloat = 20
 
     func body(content: Content) -> some View {
+        #if os(iOS)
         if #available(iOS 26, *) {
             content
                 .glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
@@ -43,12 +53,21 @@ struct GlassCardInteractive: ViewModifier {
                         .stroke(AppColors.border, lineWidth: 1)
                 )
         }
+        #else
+        content
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(AppColors.border, lineWidth: 1)
+            )
+        #endif
     }
 }
 
 /// Glass-styled button: uses glassProminent on iOS 26+, accent background on older.
 struct GlassButtonStyle: ViewModifier {
     func body(content: Content) -> some View {
+        #if os(iOS)
         if #available(iOS 26, *) {
             content.buttonStyle(.glassProminent)
         } else {
@@ -56,6 +75,11 @@ struct GlassButtonStyle: ViewModifier {
                 .foregroundStyle(.white)
                 .background(AppColors.accent, in: RoundedRectangle(cornerRadius: 14))
         }
+        #else
+        content
+            .foregroundStyle(.white)
+            .background(AppColors.accent, in: RoundedRectangle(cornerRadius: 14))
+        #endif
     }
 }
 

@@ -1,3 +1,4 @@
+#if os(iOS)
 import SwiftUI
 
 @main
@@ -16,3 +17,4 @@ struct CommandCenterApp: App {
         }
     }
 }
+#endif

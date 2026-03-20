@@ -44,9 +44,13 @@ struct LoginView: View {
                             .foregroundStyle(AppColors.text)
                             .padding(12)
                             .glassCard(cornerRadius: 12)
+                            #if os(iOS)
                             .textInputAutocapitalization(.never)
+                            #endif
                             .autocorrectionDisabled()
+                            #if os(iOS)
                             .keyboardType(.URL)
+                            #endif
                     }
 
                     VStack(alignment: .leading, spacing: 6) {

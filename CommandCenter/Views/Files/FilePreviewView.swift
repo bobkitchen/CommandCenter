@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct FilePreviewView: View {
     let path: String
@@ -24,13 +27,26 @@ struct FilePreviewView: View {
                     ErrorRetryView(message: error) {
                         Task { await loadFile() }
                     }
-                } else if isImage, let imageData, let uiImage = UIImage(data: imageData) {
-                    ScrollView {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFit()
-                            .padding()
+                } else if isImage, let imageData {
+                    #if os(iOS)
+                    if let uiImage = UIImage(data: imageData) {
+                        ScrollView {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .padding()
+                        }
                     }
+                    #elseif os(macOS)
+                    if let nsImage = NSImage(data: imageData) {
+                        ScrollView {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .scaledToFit()
+                                .padding()
+                        }
+                    }
+                    #endif
                 } else if let textContent {
                     ScrollView {
                         VStack(alignment: .leading) {
@@ -48,13 +64,22 @@ struct FilePreviewView: View {
                 }
             }
             .navigationTitle(filename)
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            #endif
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .foregroundStyle(AppColors.accent)
                 }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(AppColors.accent)
+                }
+                #endif
             }
         }
         .task { await loadFile() }

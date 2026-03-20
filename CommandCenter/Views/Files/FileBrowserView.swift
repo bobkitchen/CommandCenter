@@ -122,7 +122,9 @@ struct FileBrowserView: View {
                 }
             }
             .navigationTitle("Files")
+            #if os(iOS)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            #endif
             .searchable(text: $searchText, prompt: "Filter files")
             .sheet(item: $selectedFile) { file in
                 FilePreviewView(
