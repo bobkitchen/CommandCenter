@@ -96,6 +96,30 @@ final class APIClient {
         return try JSONDecoder().decode(T.self, from: data)
     }
 
+    // MARK: - POST (no response body needed)
+
+    func postAction(_ path: String, body: [String: Any] = [:]) async throws {
+        guard let url = URL(string: "\(baseURL)\(path)") else {
+            throw APIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        request.timeoutInterval = 30
+
+        let (_, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        if httpResponse.statusCode == 401 {
+            throw APIError.unauthorized
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.httpError(httpResponse.statusCode)
+        }
+    }
+
     // MARK: - Raw data fetch (for images etc.)
 
     func getData(_ path: String) async throws -> Data {

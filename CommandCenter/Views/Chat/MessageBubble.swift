@@ -2,38 +2,81 @@ import SwiftUI
 
 struct MessageBubble: View {
     let message: Message
+    /// Whether the next message is from the same sender (for grouping)
+    var isGrouped: Bool = false
+    /// Whether this message has been confirmed by the server
+    var isDelivered: Bool = true
+
+    @State private var showCopied = false
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
+        HStack(alignment: .bottom, spacing: 6) {
             if message.isUser { Spacer(minLength: 60) }
 
+            // Avatar — only show on last message of a group
             if !message.isUser {
-                Text("🦩")
-                    .font(.title3)
-                    .padding(.bottom, 2)
+                if !isGrouped {
+                    Text("🦩")
+                        .font(.title3)
+                        .padding(.bottom, 2)
+                } else {
+                    // Invisible spacer to keep alignment
+                    Text("🦩")
+                        .font(.title3)
+                        .opacity(0)
+                }
             }
 
-            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 4) {
+            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 2) {
                 bubbleContent
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .if(message.isUser) { view in
-                        view
-                            .background(AppColors.accent, in: RoundedRectangle(cornerRadius: 18))
+                    .background(bubbleBackground, in: BubbleShape(isUser: message.isUser, hasTail: !isGrouped))
+                    .contextMenu {
+                        Button {
+                            UIPasteboard.general.string = message.cleanedContent
+                            showCopied = true
+                            HapticHelper.light()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                showCopied = false
+                            }
+                        } label: {
+                            Label("Copy", systemImage: "doc.on.doc")
+                        }
                     }
-                    .if(!message.isUser) { view in
-                        view
-                            .glassCard(cornerRadius: 18)
+                    .overlay(alignment: .center) {
+                        if showCopied {
+                            Text("Copied")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(.black.opacity(0.7), in: Capsule())
+                                .transition(.scale.combined(with: .opacity))
+                        }
                     }
+                    .animation(.easeOut(duration: 0.2), value: showCopied)
 
-                Text(message.displayTime)
-                    .font(.caption2)
-                    .foregroundStyle(AppColors.muted)
+                // Timestamp + delivery status — only on last of group
+                if !isGrouped {
+                    HStack(spacing: 4) {
+                        Text(message.displayTime)
+                            .font(.caption2)
+                            .foregroundStyle(AppColors.muted)
+
+                        if message.isUser {
+                            Image(systemName: isDelivered ? "checkmark.circle.fill" : "checkmark.circle")
+                                .font(.caption2)
+                                .foregroundStyle(isDelivered ? AppColors.accent : AppColors.muted)
+                        }
+                    }
                     .padding(.horizontal, 4)
+                }
             }
 
             if !message.isUser { Spacer(minLength: 60) }
         }
+        .padding(.bottom, isGrouped ? 1 : 6)
     }
 
     @ViewBuilder
@@ -45,6 +88,53 @@ struct MessageBubble: View {
         } else {
             MarkdownText(message.cleanedContent)
         }
+    }
+
+    private var bubbleBackground: some ShapeStyle {
+        message.isUser ? AnyShapeStyle(AppColors.accent) : AnyShapeStyle(AppColors.card)
+    }
+}
+
+// MARK: - Bubble Shape with Tail
+
+struct BubbleShape: Shape {
+    let isUser: Bool
+    let hasTail: Bool
+
+    func path(in rect: CGRect) -> Path {
+        let radius: CGFloat = 18
+        let tailSize: CGFloat = 6
+
+        var path = Path()
+
+        if hasTail && isUser {
+            // User bubble: tail on bottom-right
+            path.addRoundedRect(in: CGRect(x: rect.minX, y: rect.minY,
+                                           width: rect.width - tailSize, height: rect.height),
+                                cornerSize: CGSize(width: radius, height: radius))
+            // Tail
+            let tailX = rect.maxX - tailSize
+            let tailY = rect.maxY - 12
+            path.move(to: CGPoint(x: tailX, y: tailY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - 4))
+            path.addLine(to: CGPoint(x: tailX, y: tailY + 10))
+        } else if hasTail && !isUser {
+            // Assistant bubble: tail on bottom-left
+            path.addRoundedRect(in: CGRect(x: rect.minX + tailSize, y: rect.minY,
+                                           width: rect.width - tailSize, height: rect.height),
+                                cornerSize: CGSize(width: radius, height: radius))
+            // Tail
+            let tailX = rect.minX + tailSize
+            let tailY = rect.maxY - 12
+            path.move(to: CGPoint(x: tailX, y: tailY))
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - 4))
+            path.addLine(to: CGPoint(x: tailX, y: tailY + 10))
+        } else {
+            // No tail — simple rounded rect
+            path.addRoundedRect(in: rect, cornerSize: CGSize(width: radius, height: radius))
+        }
+
+        return path
     }
 }
 

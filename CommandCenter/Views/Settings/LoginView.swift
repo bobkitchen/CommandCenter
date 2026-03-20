@@ -6,6 +6,7 @@ struct LoginView: View {
     @State private var serverURL = ""
     @State private var password = ""
     @State private var connectivity = ConnectivityService()
+    @State private var urlDebounce: Task<Void, Never>?
 
     var body: some View {
         @Bindable var auth = authService
@@ -92,8 +93,10 @@ struct LoginView: View {
                 .padding(.horizontal, 32)
                 .disabled(authService.isLoading || serverURL.isEmpty || password.isEmpty)
 
-                // Connectivity status
+                // Connectivity status — fixed layout to prevent jitter
                 connectivityIndicator
+                    .frame(height: 60)
+                    .frame(maxWidth: .infinity)
                     .padding(.horizontal, 32)
 
                 Spacer()
@@ -107,6 +110,7 @@ struct LoginView: View {
         }
         .onDisappear {
             connectivity.stopMonitoring()
+            urlDebounce?.cancel()
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
@@ -114,57 +118,66 @@ struct LoginView: View {
             }
         }
         .onChange(of: serverURL) {
-            connectivity.stopMonitoring()
-            connectivity.startMonitoring(serverURL: serverURL)
+            // Debounce URL changes — only restart monitoring after user stops typing
+            urlDebounce?.cancel()
+            urlDebounce = Task {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else { return }
+                connectivity.stopMonitoring()
+                connectivity.startMonitoring(serverURL: serverURL)
+            }
         }
     }
 
     @ViewBuilder
     private var connectivityIndicator: some View {
-        switch connectivity.state {
-        case .checking:
+        // Always show the disconnected layout structure to prevent height changes
+        VStack(spacing: 10) {
             HStack(spacing: 8) {
-                ProgressView()
-                    .controlSize(.small)
-                Text("Checking connection...")
-                    .font(.caption)
-                    .foregroundStyle(AppColors.muted)
-            }
-
-        case .connected:
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(AppColors.success)
-                    .frame(width: 8, height: 8)
-                Text("Server reachable")
-                    .font(.caption)
-                    .foregroundStyle(AppColors.success)
-            }
-
-        case .disconnected:
-            VStack(spacing: 10) {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(AppColors.danger)
-                        .frame(width: 8, height: 8)
-                    Text("Server unreachable")
+                if connectivity.state == .checking {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Checking connection...")
                         .font(.caption)
-                        .foregroundStyle(AppColors.danger)
+                        .foregroundStyle(AppColors.muted)
+                } else {
+                    Circle()
+                        .fill(connectivity.state == .connected ? AppColors.success : AppColors.danger)
+                        .frame(width: 8, height: 8)
+                    Text(connectivity.state == .connected ? "Server reachable" : "Server unreachable")
+                        .font(.caption)
+                        .foregroundStyle(connectivity.state == .connected ? AppColors.success : AppColors.danger)
                 }
+            }
 
-                Button {
-                    connectivity.openTailscale()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "network")
-                        Text("Open Tailscale")
-                            .font(.subheadline.weight(.medium))
+            if connectivity.state == .disconnected {
+                HStack(spacing: 12) {
+                    Button {
+                        connectivity.openTailscale()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "network")
+                            Text("Open Tailscale")
+                                .font(.subheadline.weight(.medium))
+                        }
+                        .foregroundStyle(AppColors.accent)
                     }
-                    .foregroundStyle(AppColors.accent)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .glassCard(cornerRadius: 12)
+
+                    Button {
+                        connectivity.state = .checking
+                        Task { await connectivity.check(serverURL: serverURL) }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.clockwise")
+                            Text("Retry")
+                                .font(.subheadline.weight(.medium))
+                        }
+                        .foregroundStyle(AppColors.muted)
+                    }
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .glassCard(cornerRadius: 12)
             }
         }
     }

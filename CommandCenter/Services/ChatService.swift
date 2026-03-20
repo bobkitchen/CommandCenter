@@ -73,6 +73,11 @@ final class ChatService {
         pollTask = nil
     }
 
+    /// Whether a message is still optimistic (not yet confirmed by server)
+    func isOptimistic(_ message: Message) -> Bool {
+        optimisticIds.contains(message.id)
+    }
+
     // MARK: - Private
 
     /// Merge server messages with optimistic ones, matching by content to avoid flash

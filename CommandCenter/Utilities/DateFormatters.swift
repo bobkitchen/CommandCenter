@@ -35,6 +35,21 @@ enum DateFormatters {
         return timeOnly.string(from: date)
     }
 
+    /// Returns "Today", "Yesterday", or "Mar 18" etc.
+    static func formatDateHeader(from string: String) -> String? {
+        guard let date = parseDate(from: string) else { return nil }
+        let cal = Calendar.current
+        if cal.isDateInToday(date) { return "Today" }
+        if cal.isDateInYesterday(date) { return "Yesterday" }
+        return dateSectionFormatter.string(from: date)
+    }
+
+    nonisolated(unsafe) static let dateSectionFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f
+    }()
+
     static func formatRelative(from string: String) -> String {
         guard let date = parseDate(from: string) else { return string }
         return relative.localizedString(for: date, relativeTo: Date())
