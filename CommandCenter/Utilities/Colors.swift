@@ -1,10 +1,13 @@
 import SwiftUI
 
 enum AppColors {
-    static let background   = Color(hex: 0x0d1117)
-    static let backgroundAlt = Color(hex: 0x1a1f2e)
-    static let card         = Color(hex: 0x161b22)
-    static let border       = Color(hex: 0x30363d)
+    // Theme-aware colors
+    static var background: Color { AppTheme.shared.background }
+    static var backgroundAlt: Color { AppTheme.shared.backgroundAlt }
+    static var card: Color { AppTheme.shared.card }
+    static var border: Color { AppTheme.shared.border }
+
+    // Fixed colors (same in both themes)
     static let accent       = Color(hex: 0x58a6ff)
     static let text         = Color(hex: 0xe6edf3)
     static let muted        = Color(hex: 0x8b949e)

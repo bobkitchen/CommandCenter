@@ -27,6 +27,14 @@ struct Message: Codable, Identifiable, Equatable {
         DateFormatters.formatTime(from: timestamp)
     }
 
+    var dateHeader: String? {
+        DateFormatters.formatDateHeader(from: timestamp)
+    }
+
+    var parsedDate: Date? {
+        DateFormatters.parseDate(from: timestamp)
+    }
+
     static func == (lhs: Message, rhs: Message) -> Bool { lhs.id == rhs.id }
 }
 

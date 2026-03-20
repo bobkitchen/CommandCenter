@@ -33,3 +33,33 @@ targets:
         SWIFT_STRICT_CONCURRENCY: complete
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    entitlements:
+      path: CommandCenter/CommandCenter.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.bobkitchen.commandcenter
+    dependencies:
+      - target: CommandCenterWidgetExtension
+
+  CommandCenterWidgetExtension:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: CommandCenterWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bobkitchen.commandcenter.widget
+        INFOPLIST_KEY_CFBundleDisplayName: "Command Center Widget"
+        INFOPLIST_KEY_NSExtension: |
+          <dict>
+            <key>NSExtensionPointIdentifier</key>
+            <string>com.apple.widgetkit-extension</string>
+          </dict>
+        SWIFT_STRICT_CONCURRENCY: complete
+        GENERATE_INFOPLIST_FILE: true
+    entitlements:
+      path: CommandCenterWidget/CommandCenterWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.bobkitchen.commandcenter
