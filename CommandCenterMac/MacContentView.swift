@@ -3,6 +3,7 @@ import SwiftUI
 #if os(macOS)
 struct MacContentView: View {
     @State private var selectedItem: SidebarItem? = .dashboard
+    @State private var showCommandPalette = false
 
     var body: some View {
         NavigationSplitView {
@@ -28,6 +29,14 @@ struct MacContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showCommandPalette) {
+            CommandPalette(selection: $selectedItem)
+        }
+        .background(
+            Button("") { showCommandPalette = true }
+                .keyboardShortcut("k", modifiers: .command)
+                .hidden()
+        )
     }
 
     private func placeholderView(_ title: String, icon: String, subtitle: String) -> some View {
