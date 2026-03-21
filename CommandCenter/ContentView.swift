@@ -17,6 +17,11 @@ struct ContentView: View {
                 .tabItem {
                     Label("Files", systemImage: "folder")
                 }
+
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape")
+                }
         }
         .tint(AppColors.accent)
         .preferredColorScheme(.dark)

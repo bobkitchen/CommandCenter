@@ -154,7 +154,11 @@ final class OpenClawMonitor {
             model: model,
             uptime: uptimeStr,
             agentCount: status.agents?.count ?? 0,
-            lastUpdated: Date()
+            lastUpdated: Date(),
+            processNames: status.pm2?.processes?.compactMap(\.name) ?? [],
+            processStatuses: status.pm2?.processes?.compactMap(\.status) ?? [],
+            cronActive: status.cron?.enabled?.intValue ?? 0,
+            cronTotal: status.cron?.total?.intValue ?? 0
         )
         #if canImport(WidgetKit)
         data.save()

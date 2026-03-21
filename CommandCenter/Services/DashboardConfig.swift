@@ -27,7 +27,6 @@ enum DashboardCard: String, CaseIterable, Codable, Identifiable {
         }
     }
 
-    /// Default order optimized for monitoring
     static let defaultOrder: [DashboardCard] = [
         .status, .tokenUsage, .quickActions, .activityFeed,
         .crises, .memory, .calendar, .weather, .strava
@@ -38,60 +37,60 @@ enum DashboardCard: String, CaseIterable, Codable, Identifiable {
 final class DashboardConfig {
     static let shared = DashboardConfig()
 
-    var cardOrder: [DashboardCard] {
-        get {
-            guard let data = UserDefaults.standard.data(forKey: "dashboardCardOrder"),
-                  let decoded = try? JSONDecoder().decode([DashboardCard].self, from: data) else {
-                return DashboardCard.defaultOrder
-            }
-            // Add any new cards not yet in saved order
-            let missing = DashboardCard.defaultOrder.filter { !decoded.contains($0) }
-            return decoded + missing
-        }
-        set {
-            if let data = try? JSONEncoder().encode(newValue) {
-                UserDefaults.standard.set(data, forKey: "dashboardCardOrder")
-            }
-        }
-    }
-
-    var hiddenCards: Set<DashboardCard> {
-        get {
-            guard let data = UserDefaults.standard.data(forKey: "dashboardHiddenCards"),
-                  let decoded = try? JSONDecoder().decode(Set<DashboardCard>.self, from: data) else {
-                return []
-            }
-            return decoded
-        }
-        set {
-            if let data = try? JSONEncoder().encode(newValue) {
-                UserDefaults.standard.set(data, forKey: "dashboardHiddenCards")
-            }
-        }
-    }
+    // Stored properties so @Observable can track changes
+    var cardOrder: [DashboardCard]
+    var hiddenCards: Set<DashboardCard>
 
     var visibleCards: [DashboardCard] {
         cardOrder.filter { !hiddenCards.contains($0) }
+    }
+
+    init() {
+        // Load from UserDefaults
+        if let data = UserDefaults.standard.data(forKey: "dashboardCardOrder"),
+           let decoded = try? JSONDecoder().decode([DashboardCard].self, from: data) {
+            let missing = DashboardCard.defaultOrder.filter { !decoded.contains($0) }
+            self.cardOrder = decoded + missing
+        } else {
+            self.cardOrder = DashboardCard.defaultOrder
+        }
+
+        if let data = UserDefaults.standard.data(forKey: "dashboardHiddenCards"),
+           let decoded = try? JSONDecoder().decode(Set<DashboardCard>.self, from: data) {
+            self.hiddenCards = decoded
+        } else {
+            self.hiddenCards = []
+        }
+    }
+
+    private func save() {
+        if let data = try? JSONEncoder().encode(cardOrder) {
+            UserDefaults.standard.set(data, forKey: "dashboardCardOrder")
+        }
+        if let data = try? JSONEncoder().encode(hiddenCards) {
+            UserDefaults.standard.set(data, forKey: "dashboardHiddenCards")
+        }
     }
 
     func moveCard(from source: IndexSet, to destination: Int) {
         var order = cardOrder
         order.move(fromOffsets: source, toOffset: destination)
         cardOrder = order
+        save()
     }
 
     func toggleCard(_ card: DashboardCard) {
-        var hidden = hiddenCards
-        if hidden.contains(card) {
-            hidden.remove(card)
+        if hiddenCards.contains(card) {
+            hiddenCards.remove(card)
         } else {
-            hidden.insert(card)
+            hiddenCards.insert(card)
         }
-        hiddenCards = hidden
+        save()
     }
 
     func resetToDefaults() {
         cardOrder = DashboardCard.defaultOrder
         hiddenCards = []
+        save()
     }
 }

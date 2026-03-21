@@ -116,9 +116,7 @@ struct MarkdownText: View {
                 .background(AppColors.background.opacity(0.5))
             }
 
-            Text(code)
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(AppColors.text.opacity(0.9))
+            SyntaxHighlightedCode(code: code, language: language)
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

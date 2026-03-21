@@ -97,6 +97,21 @@ struct LoginView: View {
                 .padding(.horizontal, 32)
                 .disabled(authService.isLoading || serverURL.isEmpty || password.isEmpty)
 
+                // Biometric unlock
+                if authService.biometricEnabled && !authService.password.isEmpty {
+                    Button {
+                        Task { await authService.authenticateWithBiometrics() }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: authService.biometricLabel == "Face ID" ? "faceid" : "touchid")
+                            Text("Unlock with \(authService.biometricLabel)")
+                                .font(.subheadline.weight(.medium))
+                        }
+                        .foregroundStyle(AppColors.accent)
+                    }
+                    .padding(.top, 4)
+                }
+
                 // Connectivity status — fixed layout to prevent jitter
                 connectivityIndicator
                     .frame(height: 60)
@@ -110,20 +125,33 @@ struct LoginView: View {
         .onAppear {
             serverURL = authService.serverURL
             password = authService.password
-            connectivity.startMonitoring(serverURL: authService.serverURL)
+            // Default URL for first launch
+            if serverURL.isEmpty {
+                serverURL = "http://100.74.188.28:8765"
+            }
+            // Start monitoring
+            if serverURL.hasPrefix("http") {
+                connectivity.startMonitoring(serverURL: serverURL)
+            } else {
+                connectivity.state = .disconnected
+            }
         }
         .onDisappear {
             connectivity.stopMonitoring()
             urlDebounce?.cancel()
         }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active {
+            if newPhase == .active, !serverURL.isEmpty, serverURL.hasPrefix("http") {
                 Task { await connectivity.check(serverURL: serverURL) }
             }
         }
         .onChange(of: serverURL) {
             // Debounce URL changes — only restart monitoring after user stops typing
             urlDebounce?.cancel()
+            guard !serverURL.isEmpty, serverURL.hasPrefix("http") else {
+                connectivity.stopMonitoring()
+                return
+            }
             urlDebounce = Task {
                 try? await Task.sleep(for: .seconds(1))
                 guard !Task.isCancelled else { return }

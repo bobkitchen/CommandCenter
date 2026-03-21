@@ -14,6 +14,20 @@ settings:
     CURRENT_PROJECT_VERSION: 1
     INFOPLIST_FILE: CommandCenter/Info.plist
 
+schemes:
+  CommandCenter:
+    build:
+      targets:
+        CommandCenter: all
+    run:
+      config: Debug
+  CommandCenterMac:
+    build:
+      targets:
+        CommandCenterMac: all
+    run:
+      config: Debug
+
 targets:
   CommandCenter:
     type: application
@@ -63,9 +77,11 @@ targets:
     entitlements:
       path: CommandCenterMac/CommandCenterMac.entitlements
       properties:
+        com.apple.security.app-sandbox: false
         com.apple.security.application-groups:
           - group.com.bobkitchen.commandcenter
         com.apple.security.network.client: true
+        com.apple.security.network.server: true
 
   CommandCenterWidgetExtension:
     type: app-extension

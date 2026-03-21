@@ -4,6 +4,7 @@ struct CrisisCard: View {
     @State private var crises: [Crisis] = []
     @State private var isLoading = true
     @State private var loadError = false
+    @State private var selectedCrisis: Crisis?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -26,7 +27,13 @@ struct CrisisCard: View {
             } else {
                 VStack(spacing: 10) {
                     ForEach(crises) { crisis in
-                        crisisRow(crisis)
+                        Button {
+                            HapticHelper.light()
+                            selectedCrisis = crisis
+                        } label: {
+                            crisisRow(crisis)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -35,6 +42,9 @@ struct CrisisCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(tint: crises.contains(where: { $0.level?.lowercased() == "critical" }) ? AppColors.danger.opacity(0.15) : nil)
         .task { await loadCrises() }
+        .sheet(item: $selectedCrisis) { crisis in
+            CrisisDetailView(crisis: crisis)
+        }
     }
 
     private func crisisRow(_ crisis: Crisis) -> some View {

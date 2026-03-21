@@ -69,19 +69,32 @@ final class ConnectivityService {
 
     private func performCheck(serverURL: String) async {
         let trimmed = serverURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard !trimmed.isEmpty, trimmed.hasPrefix("http") else {
+            print("[Connectivity] No valid server URL, skipping check")
+            return
+        }
+        print("[Connectivity] Checking: \(trimmed)/api/openclaw-status")
         guard let url = URL(string: "\(trimmed)/api/openclaw-status") else {
+            print("[Connectivity] Invalid URL")
             setIfChanged(.disconnected)
             return
         }
 
         do {
             let (_, response) = try await session.data(for: URLRequest(url: url))
-            if let http = response as? HTTPURLResponse, (200...499).contains(http.statusCode) {
-                setIfChanged(.connected)
+            if let http = response as? HTTPURLResponse {
+                print("[Connectivity] HTTP \(http.statusCode)")
+                if (200...499).contains(http.statusCode) {
+                    setIfChanged(.connected)
+                } else {
+                    setIfChanged(.disconnected)
+                }
             } else {
+                print("[Connectivity] Non-HTTP response")
                 setIfChanged(.disconnected)
             }
         } catch {
+            print("[Connectivity] Error: \(error.localizedDescription)")
             setIfChanged(.disconnected)
         }
     }

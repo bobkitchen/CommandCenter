@@ -4,14 +4,20 @@ struct CrisesResponse: Codable {
     let crises: [Crisis]
 }
 
-struct Crisis: Codable, Identifiable {
+struct Crisis: Codable, Identifiable, Hashable {
     let name: String
     let status: String?
     let level: String?
     let updated: String?
     let summary: String?
+    let details: String?
+    let source: String?
+    let createdAt: String?
 
     var id: String { name }
+
+    func hash(into hasher: inout Hasher) { hasher.combine(name) }
+    static func == (lhs: Crisis, rhs: Crisis) -> Bool { lhs.name == rhs.name }
 
     var levelColor: Color {
         switch level?.lowercased() {

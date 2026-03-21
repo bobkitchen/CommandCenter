@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChatInputBar: View {
     @Binding var text: String
+    var onAttach: (() -> Void)?
     var onSend: () -> Void
 
     @FocusState private var isFocused: Bool
@@ -13,6 +14,15 @@ struct ChatInputBar: View {
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 10) {
+            if let onAttach {
+                Button(action: onAttach) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(AppColors.muted)
+                }
+                .buttonStyle(.plain)
+            }
+
             TextField("Message Denny…", text: $text, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(.body)
@@ -44,7 +54,6 @@ struct ChatInputBar: View {
 
     private func doSend() {
         guard canSend else { return }
-        // Animate the send button
         withAnimation(.easeOut(duration: 0.1)) { sendScale = 0.7 }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.5).delay(0.1)) { sendScale = 1.0 }
         onSend()
