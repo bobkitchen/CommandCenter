@@ -34,7 +34,12 @@ struct MessageBubble: View {
                     .background(bubbleBackground, in: BubbleShape(isUser: message.isUser, hasTail: !isGrouped))
                     .contextMenu {
                         Button {
+                            #if os(iOS)
                             UIPasteboard.general.string = message.cleanedContent
+                            #elseif os(macOS)
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(message.cleanedContent, forType: .string)
+                            #endif
                             showCopied = true
                             HapticHelper.light()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {

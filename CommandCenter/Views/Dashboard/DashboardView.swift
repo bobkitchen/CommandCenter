@@ -12,6 +12,7 @@ struct DashboardView: View {
                 AppColors.backgroundGradient
 
                 ScrollView {
+                    #if os(iOS)
                     if #available(iOS 26, *) {
                         GlassEffectContainer(spacing: 16) {
                             dashboardContent
@@ -19,6 +20,9 @@ struct DashboardView: View {
                     } else {
                         dashboardContent
                     }
+                    #else
+                    dashboardContent
+                    #endif
                 }
                 .refreshable {
                     await monitor.refresh()
@@ -26,8 +30,11 @@ struct DashboardView: View {
                 }
             }
             .navigationTitle("Command Center")
+            #if os(iOS)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            #endif
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         HapticHelper.light()
@@ -37,6 +44,17 @@ struct DashboardView: View {
                             .foregroundStyle(AppColors.muted)
                     }
                 }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    Button {
+                        HapticHelper.light()
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                            .foregroundStyle(AppColors.muted)
+                    }
+                }
+                #endif
             }
             .sheet(isPresented: $showSettings) {
                 DashboardSettingsSheet(config: config)

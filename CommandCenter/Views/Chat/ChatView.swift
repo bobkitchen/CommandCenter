@@ -44,7 +44,9 @@ struct ChatView: View {
                             .padding(.vertical, 8)
                             .animation(.easeOut(duration: 0.25), value: chatService.messages.count)
                         }
+                        #if os(iOS)
                         .scrollDismissesKeyboard(.interactively)
+                        #endif
                         .refreshable {
                             await chatService.loadHistory()
                         }
@@ -110,16 +112,70 @@ struct ChatView: View {
                     }
                 }
             }
-            .navigationTitle("Denny 🦩")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text("Denny 🦩")
+                            .font(.headline)
+                            .foregroundStyle(AppColors.text)
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(transportColor)
+                                .frame(width: 6, height: 6)
+                            Text(chatService.transport.rawValue)
+                                .font(.caption2)
+                                .foregroundStyle(AppColors.muted)
+                        }
+                    }
+                }
+                #if os(iOS)
+                ToolbarItem(placement: .topBarTrailing) {
+                    if chatService.transport == .polling {
+                        Button {
+                            HapticHelper.light()
+                            chatService.reconnectWebSocket()
+                        } label: {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(AppColors.muted)
+                        }
+                    }
+                }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    if chatService.transport == .polling {
+                        Button {
+                            HapticHelper.light()
+                            chatService.reconnectWebSocket()
+                        } label: {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(AppColors.muted)
+                        }
+                    }
+                }
+                #endif
+            }
         }
         .task {
-            await chatService.loadHistory()
-            chatService.startPolling()
+            await chatService.start()
         }
         .onDisappear {
-            chatService.stopPolling()
+            chatService.stop()
+        }
+    }
+
+    // MARK: - Transport
+
+    private var transportColor: Color {
+        switch chatService.transport {
+        case .websocket: return AppColors.success
+        case .polling: return AppColors.warning
+        case .connecting: return AppColors.muted
         }
     }
 

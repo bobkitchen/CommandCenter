@@ -1,0 +1,938 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0028C214765583A97277CC65 /* TokenCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7080DDAB2F43FB9C6AE77725 /* TokenCard.swift */; };
+		03F74A55D9FDA5F081F77109 /* QuickReplyChips.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF5DE1A856656FFC048CBED /* QuickReplyChips.swift */; };
+		05DA3337B27208A209D9817D /* ErrorRetryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038BDCE4A01E22EBD355F523 /* ErrorRetryView.swift */; };
+		064D026237691DA84B99FB84 /* MarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1734C095AE0709ACD9E310 /* MarkdownText.swift */; };
+		08AEB5A99D6B7BA4B1634A86 /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD234C2002F4FD913DF9A04E /* TaskItem.swift */; };
+		09D5482345C18B3EA30DC81F /* KanbanColumnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA46AFC31FEAA1121A63DC1F /* KanbanColumnView.swift */; };
+		0AAB0361DE6CED6332FF598E /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D4BA36C99561F9FF0FB155 /* LoginView.swift */; };
+		0B1A71558CB38BFA88CECECA /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C027B510E82F8444DB6C5BC /* KeychainHelper.swift */; };
+		0C473EA395796A6E8FFB307A /* TaskService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC5F6A08B798ED3F0DDB67B /* TaskService.swift */; };
+		0D89CC7E52012D006E1FDD57 /* FileEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BC936E13312666CC799E9D /* FileEntry.swift */; };
+		15679767C97F55304C8B8848 /* QuickActionsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3ACA918741CECF0860F7C4 /* QuickActionsCard.swift */; };
+		16BC6B53EBF966926D5ACF91 /* WeatherData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A5BB7CE7986AB0788FB0AD /* WeatherData.swift */; };
+		187873420530503504730A6B /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7925B23860CE14FEB431F46F /* ChatView.swift */; };
+		187A78F9640123440C88FDA4 /* CommandCenterWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2985B323B2FF16EEFD0EB982 /* CommandCenterWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1A60DEA48748497C2E0F5DAA /* ChatInputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05044661825F2125B721884 /* ChatInputBar.swift */; };
+		1C0DD6C544E8FA266B798046 /* ConnectivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAF5D683DEF8F1A1856412F /* ConnectivityService.swift */; };
+		21DE6A5A3B657BA054FAC752 /* WeatherData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A5BB7CE7986AB0788FB0AD /* WeatherData.swift */; };
+		22A803713591AF8741719643 /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F27E6E7A3F1713C1FAE9F7E /* WidgetData.swift */; };
+		295D75CD7FBFDE3C1960ED7D /* CommandCenterWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84B641DF8BACCB2DAB86F5D /* CommandCenterWidget.swift */; };
+		2A2535D1134F68C2994D27FE /* CalendarCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C960E5B6A832E34E06AC55 /* CalendarCard.swift */; };
+		2A969E5282A5E1359D002736 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD5E96E8178253B899F6BD34 /* NotificationService.swift */; };
+		2ADB086EC26B8C53EB81C52B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10CFCF266D71B87C6E1858BF /* ContentView.swift */; };
+		2CE8EB75972EE095FB41293C /* MenuBarExtraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B98536CEAA725ACC248108 /* MenuBarExtraView.swift */; };
+		308D0794BD253811AAE523C1 /* FileEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF3A5FD2C58CF94EE64AB6B3 /* FileEditorView.swift */; };
+		3611D71552805F426A489C85 /* ChatInputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05044661825F2125B721884 /* ChatInputBar.swift */; };
+		40335631341A4C301F2B350B /* MemoryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E7A893A9AEE048FA9DD896E /* MemoryCard.swift */; };
+		41CFBE0801668FA061584BF0 /* Crisis.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF47AC6D822148B0D435FD6 /* Crisis.swift */; };
+		42AC7BF1053885436291BD29 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D4BA36C99561F9FF0FB155 /* LoginView.swift */; };
+		4310D35179E89F11C8FAF733 /* AgentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F03283C4D5B3E0882F0DED /* AgentCard.swift */; };
+		469F8DCA92937F45CAA6693D /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9ACD3F5FD10A0DDE7B21BBA /* Colors.swift */; };
+		48BBDC522B81814C3A40DEFA /* FilePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C74C5127B0BD6EB5ACA15F9 /* FilePreviewView.swift */; };
+		4B26E68C67E7B8CBDB17F4DF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BEA12B3E322678D6983D81BF /* Assets.xcassets */; };
+		4B61C730D6FD2D587EF7DA0A /* TokenCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7080DDAB2F43FB9C6AE77725 /* TokenCard.swift */; };
+		4B8F3AB989C96D3DFFA8A3BC /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0518115E37EEB0092EEC5B /* APIClient.swift */; };
+		4B9B902BFA05D39740BD10DC /* SlashCommandMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4659597E019AAEEE29E3FDB5 /* SlashCommandMenu.swift */; };
+		4BB5BAA062ABC461E6C34DB5 /* MarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1734C095AE0709ACD9E310 /* MarkdownText.swift */; };
+		506F7C923F0D6930CFF4AA78 /* CommandCenterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812C06EC1FCD07EBF0FF5D37 /* CommandCenterApp.swift */; };
+		5077342305B12ACF4065555D /* DashboardSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C720415F1FD0F0CC21BE1E1 /* DashboardSettingsSheet.swift */; };
+		52190A92AD6E0AF32B2D6566 /* QuickReplyChips.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF5DE1A856656FFC048CBED /* QuickReplyChips.swift */; };
+		56A4A2F0BD2F9C659B09077A /* HapticHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10083FF6E6FA8EC6E42933E1 /* HapticHelper.swift */; };
+		58AF3E0F9129EAFD14861D27 /* FileBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF0E7F980786C8EC964626F /* FileBrowserView.swift */; };
+		5E3D7FAD3AB9700D7B07B933 /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F27E6E7A3F1713C1FAE9F7E /* WidgetData.swift */; };
+		5F4B8C6330414FBC79BAE6ED /* HealthBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CEC9FBD5924AE510E20BCA /* HealthBanner.swift */; };
+		6131FC084A25848826744467 /* SlashCommandMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4659597E019AAEEE29E3FDB5 /* SlashCommandMenu.swift */; };
+		62367D349EF2EC21E61F0D8C /* CalendarCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C960E5B6A832E34E06AC55 /* CalendarCard.swift */; };
+		6575C727C941900031DA142D /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD5E96E8178253B899F6BD34 /* NotificationService.swift */; };
+		660CADF4D5DFAC514CE7E9A3 /* MacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296348478AB374320B8CF8C7 /* MacApp.swift */; };
+		67659C5D8D080E4A424DC190 /* MacContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AAAB6336D86ABB0BED56422 /* MacContentView.swift */; };
+		69C9044174EAB07593E70129 /* DateFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 105DFF34364085A9A8217A6C /* DateFormatters.swift */; };
+		6A3E2C07A66F462C89E84941 /* OpenClawMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32BA80E0F63050F7ECDC61 /* OpenClawMonitor.swift */; };
+		6AE9C2325755C8647CF7FA8A /* WeatherCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668FF620A025B510D3CBDEF2 /* WeatherCard.swift */; };
+		6C66244C71E405CC40006B15 /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03C6CD244F4966A549E4B96 /* Sidebar.swift */; };
+		6CAE1F741D0EFFDA92597751 /* CrisisCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF57BB4C29C644D0DF665BEB /* CrisisCard.swift */; };
+		6E969EC5ECF62E8E260C9335 /* HealthBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CEC9FBD5924AE510E20BCA /* HealthBanner.swift */; };
+		6F28C02DB3AD860437AEDA4B /* StatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8CEBB8098EEADC0678AD60 /* StatusCard.swift */; };
+		70D5311862BC850CD3CD8553 /* CalendarEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B37ADD7077181E88056AE01 /* CalendarEvent.swift */; };
+		710751F9D9B5E4C02A6CF95E /* KanbanBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FEBB58FBD2DD60BF57E8F7 /* KanbanBoardView.swift */; };
+		7203F35AB3FC2D7920B1207A /* DateFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 105DFF34364085A9A8217A6C /* DateFormatters.swift */; };
+		7769B5FEBE0364FE5852D8E5 /* CrisisCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF57BB4C29C644D0DF665BEB /* CrisisCard.swift */; };
+		7BB587C1DEF71B53A99227B1 /* QuickActionsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3ACA918741CECF0860F7C4 /* QuickActionsCard.swift */; };
+		7F1ECD78AF3C9741CEBE9967 /* GlassModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76BBC3AF6467AB2F7C552B7A /* GlassModifiers.swift */; };
+		85696D0CC9F3ABC4D7D9C4C4 /* LogsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726C8CA996488A835AFE3F01 /* LogsService.swift */; };
+		878FA9F8878770213F9B5F9E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4ABC2C012AB983E372A222F /* DashboardView.swift */; };
+		888A33F366F95A7A6C649FFE /* FilePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C74C5127B0BD6EB5ACA15F9 /* FilePreviewView.swift */; };
+		88EACCEF0F14982C86013F18 /* DashboardSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C720415F1FD0F0CC21BE1E1 /* DashboardSettingsSheet.swift */; };
+		89BB30326B954A954D419DE1 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6EEA21D6748FC7040A1F82 /* Message.swift */; };
+		8CCEBE66D67287539D20DB4A /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0518115E37EEB0092EEC5B /* APIClient.swift */; };
+		8E18315CA19EFE3689D29C8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BEA12B3E322678D6983D81BF /* Assets.xcassets */; };
+		8E3D5FF22DC3C7D69D8CAE63 /* Crisis.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF47AC6D822148B0D435FD6 /* Crisis.swift */; };
+		9033096CBABD1BB6122866DF /* CommandCenterWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93E03593A182E8AA4762A96C /* CommandCenterWidgetBundle.swift */; };
+		91894456A79F59EB0695FB62 /* ActivityFeedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BF6668616CAB6BF268E53A2 /* ActivityFeedCard.swift */; };
+		92C602A18415F93DD9C6B65B /* CalendarEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B37ADD7077181E88056AE01 /* CalendarEvent.swift */; };
+		93892AA8C98E3B835D0672F8 /* OpenClawMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32BA80E0F63050F7ECDC61 /* OpenClawMonitor.swift */; };
+		97A368146314D44FFAFC6591 /* DashboardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635087A5591A18A76A5E5C3A /* DashboardConfig.swift */; };
+		9B485A4DCE3575DEF378EC3A /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24BAB86739994A802696857 /* AppTheme.swift */; };
+		9CD218F945B7B2FBB510E412 /* ChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F7C25916E5BC1F23A3FE844 /* ChatService.swift */; };
+		9D2024466F0CAD9F39506088 /* StravaCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00AA46514C80BD1422013047 /* StravaCard.swift */; };
+		9FE1F9CF155A42538A9E6726 /* FileBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF0E7F980786C8EC964626F /* FileBrowserView.swift */; };
+		A4489CE55196416382ADCB06 /* GlassModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76BBC3AF6467AB2F7C552B7A /* GlassModifiers.swift */; };
+		A62E9823C1F67472A6FB8C68 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0F6BD5D1B5C5E788A1979BB /* AuthService.swift */; };
+		AB04300D28E5629C14D5B197 /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD234C2002F4FD913DF9A04E /* TaskItem.swift */; };
+		ABE443418645A2486046D64C /* ConnectivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAF5D683DEF8F1A1856412F /* ConnectivityService.swift */; };
+		AC85861D1790F1A39EA80847 /* FileRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66CD3A206196031FA9308092 /* FileRow.swift */; };
+		ACEA8DD9BD488297CDDB7723 /* AgentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F03283C4D5B3E0882F0DED /* AgentCard.swift */; };
+		B03D20353CF1438F6377D527 /* StravaCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00AA46514C80BD1422013047 /* StravaCard.swift */; };
+		B0F651DB0F96FF270EB23012 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9ACD3F5FD10A0DDE7B21BBA /* Colors.swift */; };
+		B1B54432D6C9041BD5009900 /* DashboardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635087A5591A18A76A5E5C3A /* DashboardConfig.swift */; };
+		B2BD8F3C2C4CBDF4DE77000F /* MemoryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E7A893A9AEE048FA9DD896E /* MemoryCard.swift */; };
+		B8FF855E441573BC555CB286 /* WeatherCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668FF620A025B510D3CBDEF2 /* WeatherCard.swift */; };
+		C3AECBA82E27B90D33CAB383 /* LogsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726C8CA996488A835AFE3F01 /* LogsService.swift */; };
+		C400B2217DF06C1F893DFDBF /* HapticHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10083FF6E6FA8EC6E42933E1 /* HapticHelper.swift */; };
+		C40DBDE31E72569CD3F06EDA /* KanbanCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C656C273EB979584F1C85 /* KanbanCardView.swift */; };
+		C797F97EA205D62E53CCF1AD /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7925B23860CE14FEB431F46F /* ChatView.swift */; };
+		C972608228191A98ED4C1F08 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0F6BD5D1B5C5E788A1979BB /* AuthService.swift */; };
+		CA31F2D61D64E946F9BD89FD /* FileManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11C371FC13BBB70E9BC206 /* FileManagerView.swift */; };
+		CB971424D7D88854BDB409AC /* FileRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66CD3A206196031FA9308092 /* FileRow.swift */; };
+		CEB66B47952342B01B7B4BF3 /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7001BA59729030F4121B7356 /* MessageBubble.swift */; };
+		D299CFDA07C5CADC527EB0A0 /* ChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F7C25916E5BC1F23A3FE844 /* ChatService.swift */; };
+		D33FADA08B8045CBACE1D81E /* LogsViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D62183CEED4A33C10CD971B /* LogsViewerView.swift */; };
+		D4D771AFD3C18788C7F75702 /* StatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8CEBB8098EEADC0678AD60 /* StatusCard.swift */; };
+		D513571E89AF589312425FCE /* FileEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BC936E13312666CC799E9D /* FileEntry.swift */; };
+		D8CB7F0AFB2862AB342DE644 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C027B510E82F8444DB6C5BC /* KeychainHelper.swift */; };
+		DA8ED90B35264D102B0C090B /* ErrorRetryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038BDCE4A01E22EBD355F523 /* ErrorRetryView.swift */; };
+		DB9F7A4517723688D2A73C08 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6EEA21D6748FC7040A1F82 /* Message.swift */; };
+		DC0EB4A4B8A9BF8EE2D46014 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4ABC2C012AB983E372A222F /* DashboardView.swift */; };
+		E366DD49988C4B9A57E0FA3E /* ActivityFeedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BF6668616CAB6BF268E53A2 /* ActivityFeedCard.swift */; };
+		E63CEC29C6FC955EE03829E6 /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7001BA59729030F4121B7356 /* MessageBubble.swift */; };
+		EA32C96832BB3CE24B700678 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10CFCF266D71B87C6E1858BF /* ContentView.swift */; };
+		F09D147342960E9372DC8B95 /* CommandPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C4C98A5277C003D4BD83E8 /* CommandPalette.swift */; };
+		F9999CDE90D0AF5438289EF6 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24BAB86739994A802696857 /* AppTheme.swift */; };
+		FCBDE871D93B96F5D3EB23B8 /* TaskService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC5F6A08B798ED3F0DDB67B /* TaskService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ED909BAF62D2D2A23BADB354 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9638EE056B4500953C897095 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1B0673966136ECACE9D3697C;
+			remoteInfo = CommandCenterWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BE5CB3B917F766AD1E22D907 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				187A78F9640123440C88FDA4 /* CommandCenterWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		00AA46514C80BD1422013047 /* StravaCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaCard.swift; sourceTree = "<group>"; };
+		038BDCE4A01E22EBD355F523 /* ErrorRetryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorRetryView.swift; sourceTree = "<group>"; };
+		07C4C98A5277C003D4BD83E8 /* CommandPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPalette.swift; sourceTree = "<group>"; };
+		0B37ADD7077181E88056AE01 /* CalendarEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEvent.swift; sourceTree = "<group>"; };
+		0EF5DE1A856656FFC048CBED /* QuickReplyChips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickReplyChips.swift; sourceTree = "<group>"; };
+		10083FF6E6FA8EC6E42933E1 /* HapticHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticHelper.swift; sourceTree = "<group>"; };
+		105DFF34364085A9A8217A6C /* DateFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatters.swift; sourceTree = "<group>"; };
+		10CFCF266D71B87C6E1858BF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		1C720415F1FD0F0CC21BE1E1 /* DashboardSettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardSettingsSheet.swift; sourceTree = "<group>"; };
+		1F7C25916E5BC1F23A3FE844 /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatService.swift; sourceTree = "<group>"; };
+		21FEBB58FBD2DD60BF57E8F7 /* KanbanBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanbanBoardView.swift; sourceTree = "<group>"; };
+		25CEC9FBD5924AE510E20BCA /* HealthBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthBanner.swift; sourceTree = "<group>"; };
+		277C656C273EB979584F1C85 /* KanbanCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanbanCardView.swift; sourceTree = "<group>"; };
+		296348478AB374320B8CF8C7 /* MacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacApp.swift; sourceTree = "<group>"; };
+		2985B323B2FF16EEFD0EB982 /* CommandCenterWidgetExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CommandCenterWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C3ACA918741CECF0860F7C4 /* QuickActionsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionsCard.swift; sourceTree = "<group>"; };
+		32BC936E13312666CC799E9D /* FileEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileEntry.swift; sourceTree = "<group>"; };
+		3C74C5127B0BD6EB5ACA15F9 /* FilePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePreviewView.swift; sourceTree = "<group>"; };
+		3E8CEBB8098EEADC0678AD60 /* StatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusCard.swift; sourceTree = "<group>"; };
+		4659597E019AAEEE29E3FDB5 /* SlashCommandMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommandMenu.swift; sourceTree = "<group>"; };
+		4D62183CEED4A33C10CD971B /* LogsViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsViewerView.swift; sourceTree = "<group>"; };
+		5213DC607D307D7430723E88 /* CommandCenter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CommandCenter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F0518115E37EEB0092EEC5B /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		635087A5591A18A76A5E5C3A /* DashboardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardConfig.swift; sourceTree = "<group>"; };
+		668FF620A025B510D3CBDEF2 /* WeatherCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCard.swift; sourceTree = "<group>"; };
+		66CD3A206196031FA9308092 /* FileRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileRow.swift; sourceTree = "<group>"; };
+		6AAAB6336D86ABB0BED56422 /* MacContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacContentView.swift; sourceTree = "<group>"; };
+		6BF6668616CAB6BF268E53A2 /* ActivityFeedCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityFeedCard.swift; sourceTree = "<group>"; };
+		6C32BA80E0F63050F7ECDC61 /* OpenClawMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenClawMonitor.swift; sourceTree = "<group>"; };
+		6E7A893A9AEE048FA9DD896E /* MemoryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryCard.swift; sourceTree = "<group>"; };
+		6F27E6E7A3F1713C1FAE9F7E /* WidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetData.swift; sourceTree = "<group>"; };
+		7001BA59729030F4121B7356 /* MessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubble.swift; sourceTree = "<group>"; };
+		7080DDAB2F43FB9C6AE77725 /* TokenCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCard.swift; sourceTree = "<group>"; };
+		70C960E5B6A832E34E06AC55 /* CalendarCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarCard.swift; sourceTree = "<group>"; };
+		726C8CA996488A835AFE3F01 /* LogsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsService.swift; sourceTree = "<group>"; };
+		76BBC3AF6467AB2F7C552B7A /* GlassModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassModifiers.swift; sourceTree = "<group>"; };
+		7925B23860CE14FEB431F46F /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		812C06EC1FCD07EBF0FF5D37 /* CommandCenterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandCenterApp.swift; sourceTree = "<group>"; };
+		81B98536CEAA725ACC248108 /* MenuBarExtraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarExtraView.swift; sourceTree = "<group>"; };
+		826EE53D5BEDE49A40E465A9 /* CommandCenter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CommandCenter.entitlements; sourceTree = "<group>"; };
+		8A0770E87D80CEF6D0FBB479 /* CommandCenterMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CommandCenterMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C027B510E82F8444DB6C5BC /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		93E03593A182E8AA4762A96C /* CommandCenterWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandCenterWidgetBundle.swift; sourceTree = "<group>"; };
+		9BF0E7F980786C8EC964626F /* FileBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileBrowserView.swift; sourceTree = "<group>"; };
+		A4ABC2C012AB983E372A222F /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		A9ACD3F5FD10A0DDE7B21BBA /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		AA11C371FC13BBB70E9BC206 /* FileManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerView.swift; sourceTree = "<group>"; };
+		AA1734C095AE0709ACD9E310 /* MarkdownText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownText.swift; sourceTree = "<group>"; };
+		AFCA7B0F7646E6E32B03CC75 /* CommandCenterWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CommandCenterWidget.entitlements; sourceTree = "<group>"; };
+		B0A5BB7CE7986AB0788FB0AD /* WeatherData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherData.swift; sourceTree = "<group>"; };
+		B24BAB86739994A802696857 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		BA46AFC31FEAA1121A63DC1F /* KanbanColumnView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanbanColumnView.swift; sourceTree = "<group>"; };
+		BEA12B3E322678D6983D81BF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C03C6CD244F4966A549E4B96 /* Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sidebar.swift; sourceTree = "<group>"; };
+		C84B641DF8BACCB2DAB86F5D /* CommandCenterWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandCenterWidget.swift; sourceTree = "<group>"; };
+		DD234C2002F4FD913DF9A04E /* TaskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
+		DDC5F6A08B798ED3F0DDB67B /* TaskService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskService.swift; sourceTree = "<group>"; };
+		E0F6BD5D1B5C5E788A1979BB /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		E4F03283C4D5B3E0882F0DED /* AgentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentCard.swift; sourceTree = "<group>"; };
+		E9DC64D4DD9DDAAC393FFC7D /* CommandCenterMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CommandCenterMac.entitlements; sourceTree = "<group>"; };
+		EF57BB4C29C644D0DF665BEB /* CrisisCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrisisCard.swift; sourceTree = "<group>"; };
+		F05044661825F2125B721884 /* ChatInputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInputBar.swift; sourceTree = "<group>"; };
+		F3D4BA36C99561F9FF0FB155 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		FAAF5D683DEF8F1A1856412F /* ConnectivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectivityService.swift; sourceTree = "<group>"; };
+		FD5E96E8178253B899F6BD34 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		FD6EEA21D6748FC7040A1F82 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		FDF47AC6D822148B0D435FD6 /* Crisis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Crisis.swift; sourceTree = "<group>"; };
+		FF3A5FD2C58CF94EE64AB6B3 /* FileEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileEditorView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		062665823A32FD656F03B7F2 /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				9BF0E7F980786C8EC964626F /* FileBrowserView.swift */,
+				3C74C5127B0BD6EB5ACA15F9 /* FilePreviewView.swift */,
+				66CD3A206196031FA9308092 /* FileRow.swift */,
+			);
+			path = Files;
+			sourceTree = "<group>";
+		};
+		130E44012AE8FFAA6A404F1B = {
+			isa = PBXGroup;
+			children = (
+				1BB5FDC82B4CB76DB9F0ECF9 /* CommandCenter */,
+				685F047E570A5ABE453AFE45 /* CommandCenterMac */,
+				917C66B30415070B74910072 /* CommandCenterWidget */,
+				3830C5350B0CBAEDDBDCAAF9 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1BB5FDC82B4CB76DB9F0ECF9 /* CommandCenter */ = {
+			isa = PBXGroup;
+			children = (
+				BEA12B3E322678D6983D81BF /* Assets.xcassets */,
+				826EE53D5BEDE49A40E465A9 /* CommandCenter.entitlements */,
+				812C06EC1FCD07EBF0FF5D37 /* CommandCenterApp.swift */,
+				10CFCF266D71B87C6E1858BF /* ContentView.swift */,
+				D58B5E9107EA77A1B5EE05C6 /* Models */,
+				5E1B9C3FD2414865A0C4BA92 /* Services */,
+				B1B2E0AEED3A5D39B05C0C48 /* Utilities */,
+				52DE92208F21A0FE9C24E3AB /* Views */,
+			);
+			path = CommandCenter;
+			sourceTree = "<group>";
+		};
+		3830C5350B0CBAEDDBDCAAF9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5213DC607D307D7430723E88 /* CommandCenter.app */,
+				8A0770E87D80CEF6D0FBB479 /* CommandCenterMac.app */,
+				2985B323B2FF16EEFD0EB982 /* CommandCenterWidgetExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		52DE92208F21A0FE9C24E3AB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B77190C1EBCED3BAD95C1288 /* Chat */,
+				A49052CE279FE66F2441ABAC /* Dashboard */,
+				062665823A32FD656F03B7F2 /* Files */,
+				9AC589737DD146BD73D9B03C /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		5E1B9C3FD2414865A0C4BA92 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				5F0518115E37EEB0092EEC5B /* APIClient.swift */,
+				B24BAB86739994A802696857 /* AppTheme.swift */,
+				E0F6BD5D1B5C5E788A1979BB /* AuthService.swift */,
+				1F7C25916E5BC1F23A3FE844 /* ChatService.swift */,
+				FAAF5D683DEF8F1A1856412F /* ConnectivityService.swift */,
+				635087A5591A18A76A5E5C3A /* DashboardConfig.swift */,
+				726C8CA996488A835AFE3F01 /* LogsService.swift */,
+				FD5E96E8178253B899F6BD34 /* NotificationService.swift */,
+				6C32BA80E0F63050F7ECDC61 /* OpenClawMonitor.swift */,
+				DDC5F6A08B798ED3F0DDB67B /* TaskService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		685F047E570A5ABE453AFE45 /* CommandCenterMac */ = {
+			isa = PBXGroup;
+			children = (
+				E9DC64D4DD9DDAAC393FFC7D /* CommandCenterMac.entitlements */,
+				296348478AB374320B8CF8C7 /* MacApp.swift */,
+				6AAAB6336D86ABB0BED56422 /* MacContentView.swift */,
+				C03C6CD244F4966A549E4B96 /* Sidebar.swift */,
+				69D0BC38EF7AE43F47D253C9 /* Views */,
+			);
+			path = CommandCenterMac;
+			sourceTree = "<group>";
+		};
+		69D0BC38EF7AE43F47D253C9 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				07C4C98A5277C003D4BD83E8 /* CommandPalette.swift */,
+				FF3A5FD2C58CF94EE64AB6B3 /* FileEditorView.swift */,
+				AA11C371FC13BBB70E9BC206 /* FileManagerView.swift */,
+				21FEBB58FBD2DD60BF57E8F7 /* KanbanBoardView.swift */,
+				277C656C273EB979584F1C85 /* KanbanCardView.swift */,
+				BA46AFC31FEAA1121A63DC1F /* KanbanColumnView.swift */,
+				4D62183CEED4A33C10CD971B /* LogsViewerView.swift */,
+				81B98536CEAA725ACC248108 /* MenuBarExtraView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		917C66B30415070B74910072 /* CommandCenterWidget */ = {
+			isa = PBXGroup;
+			children = (
+				AFCA7B0F7646E6E32B03CC75 /* CommandCenterWidget.entitlements */,
+				C84B641DF8BACCB2DAB86F5D /* CommandCenterWidget.swift */,
+				93E03593A182E8AA4762A96C /* CommandCenterWidgetBundle.swift */,
+			);
+			path = CommandCenterWidget;
+			sourceTree = "<group>";
+		};
+		9AC589737DD146BD73D9B03C /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				F3D4BA36C99561F9FF0FB155 /* LoginView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		A49052CE279FE66F2441ABAC /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				6BF6668616CAB6BF268E53A2 /* ActivityFeedCard.swift */,
+				E4F03283C4D5B3E0882F0DED /* AgentCard.swift */,
+				70C960E5B6A832E34E06AC55 /* CalendarCard.swift */,
+				EF57BB4C29C644D0DF665BEB /* CrisisCard.swift */,
+				1C720415F1FD0F0CC21BE1E1 /* DashboardSettingsSheet.swift */,
+				A4ABC2C012AB983E372A222F /* DashboardView.swift */,
+				25CEC9FBD5924AE510E20BCA /* HealthBanner.swift */,
+				6E7A893A9AEE048FA9DD896E /* MemoryCard.swift */,
+				2C3ACA918741CECF0860F7C4 /* QuickActionsCard.swift */,
+				3E8CEBB8098EEADC0678AD60 /* StatusCard.swift */,
+				00AA46514C80BD1422013047 /* StravaCard.swift */,
+				7080DDAB2F43FB9C6AE77725 /* TokenCard.swift */,
+				668FF620A025B510D3CBDEF2 /* WeatherCard.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		B1B2E0AEED3A5D39B05C0C48 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				A9ACD3F5FD10A0DDE7B21BBA /* Colors.swift */,
+				105DFF34364085A9A8217A6C /* DateFormatters.swift */,
+				038BDCE4A01E22EBD355F523 /* ErrorRetryView.swift */,
+				76BBC3AF6467AB2F7C552B7A /* GlassModifiers.swift */,
+				10083FF6E6FA8EC6E42933E1 /* HapticHelper.swift */,
+				8C027B510E82F8444DB6C5BC /* KeychainHelper.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		B77190C1EBCED3BAD95C1288 /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				F05044661825F2125B721884 /* ChatInputBar.swift */,
+				7925B23860CE14FEB431F46F /* ChatView.swift */,
+				AA1734C095AE0709ACD9E310 /* MarkdownText.swift */,
+				7001BA59729030F4121B7356 /* MessageBubble.swift */,
+				0EF5DE1A856656FFC048CBED /* QuickReplyChips.swift */,
+				4659597E019AAEEE29E3FDB5 /* SlashCommandMenu.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+		D58B5E9107EA77A1B5EE05C6 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0B37ADD7077181E88056AE01 /* CalendarEvent.swift */,
+				FDF47AC6D822148B0D435FD6 /* Crisis.swift */,
+				32BC936E13312666CC799E9D /* FileEntry.swift */,
+				FD6EEA21D6748FC7040A1F82 /* Message.swift */,
+				DD234C2002F4FD913DF9A04E /* TaskItem.swift */,
+				B0A5BB7CE7986AB0788FB0AD /* WeatherData.swift */,
+				6F27E6E7A3F1713C1FAE9F7E /* WidgetData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		086A6B77A4709030022BAD47 /* CommandCenter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B8A689281B7BD997209C2464 /* Build configuration list for PBXNativeTarget "CommandCenter" */;
+			buildPhases = (
+				E9AFA32E2176DE0AC7F823AD /* Sources */,
+				3867B930B6C7E18034FFEE62 /* Resources */,
+				BE5CB3B917F766AD1E22D907 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BD0E8A46BF400BC01DEE089F /* PBXTargetDependency */,
+			);
+			name = CommandCenter;
+			packageProductDependencies = (
+			);
+			productName = CommandCenter;
+			productReference = 5213DC607D307D7430723E88 /* CommandCenter.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1B0673966136ECACE9D3697C /* CommandCenterWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BC0C4E3108ADB13EDA459E31 /* Build configuration list for PBXNativeTarget "CommandCenterWidgetExtension" */;
+			buildPhases = (
+				2E90829F2BB93F193B0C1AF8 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CommandCenterWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = CommandCenterWidgetExtension;
+			productReference = 2985B323B2FF16EEFD0EB982 /* CommandCenterWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		D0325C08E7E2DAE9182D9E13 /* CommandCenterMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EDE5633BD044179D95263B6A /* Build configuration list for PBXNativeTarget "CommandCenterMac" */;
+			buildPhases = (
+				77985186D97C982CF89BB501 /* Sources */,
+				A5925078B72A0D20EDE7723C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CommandCenterMac;
+			packageProductDependencies = (
+			);
+			productName = CommandCenterMac;
+			productReference = 8A0770E87D80CEF6D0FBB479 /* CommandCenterMac.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9638EE056B4500953C897095 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 013BB7601BD24C751E6CB42D /* Build configuration list for PBXProject "CommandCenter" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 130E44012AE8FFAA6A404F1B;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3830C5350B0CBAEDDBDCAAF9 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				086A6B77A4709030022BAD47 /* CommandCenter */,
+				D0325C08E7E2DAE9182D9E13 /* CommandCenterMac */,
+				1B0673966136ECACE9D3697C /* CommandCenterWidgetExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3867B930B6C7E18034FFEE62 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B26E68C67E7B8CBDB17F4DF /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A5925078B72A0D20EDE7723C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E18315CA19EFE3689D29C8D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2E90829F2BB93F193B0C1AF8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				295D75CD7FBFDE3C1960ED7D /* CommandCenterWidget.swift in Sources */,
+				9033096CBABD1BB6122866DF /* CommandCenterWidgetBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		77985186D97C982CF89BB501 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B8F3AB989C96D3DFFA8A3BC /* APIClient.swift in Sources */,
+				E366DD49988C4B9A57E0FA3E /* ActivityFeedCard.swift in Sources */,
+				ACEA8DD9BD488297CDDB7723 /* AgentCard.swift in Sources */,
+				9B485A4DCE3575DEF378EC3A /* AppTheme.swift in Sources */,
+				A62E9823C1F67472A6FB8C68 /* AuthService.swift in Sources */,
+				62367D349EF2EC21E61F0D8C /* CalendarCard.swift in Sources */,
+				92C602A18415F93DD9C6B65B /* CalendarEvent.swift in Sources */,
+				1A60DEA48748497C2E0F5DAA /* ChatInputBar.swift in Sources */,
+				9CD218F945B7B2FBB510E412 /* ChatService.swift in Sources */,
+				C797F97EA205D62E53CCF1AD /* ChatView.swift in Sources */,
+				B0F651DB0F96FF270EB23012 /* Colors.swift in Sources */,
+				F09D147342960E9372DC8B95 /* CommandPalette.swift in Sources */,
+				ABE443418645A2486046D64C /* ConnectivityService.swift in Sources */,
+				2ADB086EC26B8C53EB81C52B /* ContentView.swift in Sources */,
+				8E3D5FF22DC3C7D69D8CAE63 /* Crisis.swift in Sources */,
+				7769B5FEBE0364FE5852D8E5 /* CrisisCard.swift in Sources */,
+				97A368146314D44FFAFC6591 /* DashboardConfig.swift in Sources */,
+				88EACCEF0F14982C86013F18 /* DashboardSettingsSheet.swift in Sources */,
+				878FA9F8878770213F9B5F9E /* DashboardView.swift in Sources */,
+				69C9044174EAB07593E70129 /* DateFormatters.swift in Sources */,
+				DA8ED90B35264D102B0C090B /* ErrorRetryView.swift in Sources */,
+				9FE1F9CF155A42538A9E6726 /* FileBrowserView.swift in Sources */,
+				308D0794BD253811AAE523C1 /* FileEditorView.swift in Sources */,
+				D513571E89AF589312425FCE /* FileEntry.swift in Sources */,
+				CA31F2D61D64E946F9BD89FD /* FileManagerView.swift in Sources */,
+				48BBDC522B81814C3A40DEFA /* FilePreviewView.swift in Sources */,
+				CB971424D7D88854BDB409AC /* FileRow.swift in Sources */,
+				A4489CE55196416382ADCB06 /* GlassModifiers.swift in Sources */,
+				C400B2217DF06C1F893DFDBF /* HapticHelper.swift in Sources */,
+				6E969EC5ECF62E8E260C9335 /* HealthBanner.swift in Sources */,
+				710751F9D9B5E4C02A6CF95E /* KanbanBoardView.swift in Sources */,
+				C40DBDE31E72569CD3F06EDA /* KanbanCardView.swift in Sources */,
+				09D5482345C18B3EA30DC81F /* KanbanColumnView.swift in Sources */,
+				D8CB7F0AFB2862AB342DE644 /* KeychainHelper.swift in Sources */,
+				42AC7BF1053885436291BD29 /* LoginView.swift in Sources */,
+				C3AECBA82E27B90D33CAB383 /* LogsService.swift in Sources */,
+				D33FADA08B8045CBACE1D81E /* LogsViewerView.swift in Sources */,
+				660CADF4D5DFAC514CE7E9A3 /* MacApp.swift in Sources */,
+				67659C5D8D080E4A424DC190 /* MacContentView.swift in Sources */,
+				4BB5BAA062ABC461E6C34DB5 /* MarkdownText.swift in Sources */,
+				40335631341A4C301F2B350B /* MemoryCard.swift in Sources */,
+				2CE8EB75972EE095FB41293C /* MenuBarExtraView.swift in Sources */,
+				DB9F7A4517723688D2A73C08 /* Message.swift in Sources */,
+				CEB66B47952342B01B7B4BF3 /* MessageBubble.swift in Sources */,
+				2A969E5282A5E1359D002736 /* NotificationService.swift in Sources */,
+				93892AA8C98E3B835D0672F8 /* OpenClawMonitor.swift in Sources */,
+				7BB587C1DEF71B53A99227B1 /* QuickActionsCard.swift in Sources */,
+				03F74A55D9FDA5F081F77109 /* QuickReplyChips.swift in Sources */,
+				6C66244C71E405CC40006B15 /* Sidebar.swift in Sources */,
+				4B9B902BFA05D39740BD10DC /* SlashCommandMenu.swift in Sources */,
+				6F28C02DB3AD860437AEDA4B /* StatusCard.swift in Sources */,
+				B03D20353CF1438F6377D527 /* StravaCard.swift in Sources */,
+				08AEB5A99D6B7BA4B1634A86 /* TaskItem.swift in Sources */,
+				0C473EA395796A6E8FFB307A /* TaskService.swift in Sources */,
+				0028C214765583A97277CC65 /* TokenCard.swift in Sources */,
+				B8FF855E441573BC555CB286 /* WeatherCard.swift in Sources */,
+				21DE6A5A3B657BA054FAC752 /* WeatherData.swift in Sources */,
+				5E3D7FAD3AB9700D7B07B933 /* WidgetData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9AFA32E2176DE0AC7F823AD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8CCEBE66D67287539D20DB4A /* APIClient.swift in Sources */,
+				91894456A79F59EB0695FB62 /* ActivityFeedCard.swift in Sources */,
+				4310D35179E89F11C8FAF733 /* AgentCard.swift in Sources */,
+				F9999CDE90D0AF5438289EF6 /* AppTheme.swift in Sources */,
+				C972608228191A98ED4C1F08 /* AuthService.swift in Sources */,
+				2A2535D1134F68C2994D27FE /* CalendarCard.swift in Sources */,
+				70D5311862BC850CD3CD8553 /* CalendarEvent.swift in Sources */,
+				3611D71552805F426A489C85 /* ChatInputBar.swift in Sources */,
+				D299CFDA07C5CADC527EB0A0 /* ChatService.swift in Sources */,
+				187873420530503504730A6B /* ChatView.swift in Sources */,
+				469F8DCA92937F45CAA6693D /* Colors.swift in Sources */,
+				506F7C923F0D6930CFF4AA78 /* CommandCenterApp.swift in Sources */,
+				1C0DD6C544E8FA266B798046 /* ConnectivityService.swift in Sources */,
+				EA32C96832BB3CE24B700678 /* ContentView.swift in Sources */,
+				41CFBE0801668FA061584BF0 /* Crisis.swift in Sources */,
+				6CAE1F741D0EFFDA92597751 /* CrisisCard.swift in Sources */,
+				B1B54432D6C9041BD5009900 /* DashboardConfig.swift in Sources */,
+				5077342305B12ACF4065555D /* DashboardSettingsSheet.swift in Sources */,
+				DC0EB4A4B8A9BF8EE2D46014 /* DashboardView.swift in Sources */,
+				7203F35AB3FC2D7920B1207A /* DateFormatters.swift in Sources */,
+				05DA3337B27208A209D9817D /* ErrorRetryView.swift in Sources */,
+				58AF3E0F9129EAFD14861D27 /* FileBrowserView.swift in Sources */,
+				0D89CC7E52012D006E1FDD57 /* FileEntry.swift in Sources */,
+				888A33F366F95A7A6C649FFE /* FilePreviewView.swift in Sources */,
+				AC85861D1790F1A39EA80847 /* FileRow.swift in Sources */,
+				7F1ECD78AF3C9741CEBE9967 /* GlassModifiers.swift in Sources */,
+				56A4A2F0BD2F9C659B09077A /* HapticHelper.swift in Sources */,
+				5F4B8C6330414FBC79BAE6ED /* HealthBanner.swift in Sources */,
+				0B1A71558CB38BFA88CECECA /* KeychainHelper.swift in Sources */,
+				0AAB0361DE6CED6332FF598E /* LoginView.swift in Sources */,
+				85696D0CC9F3ABC4D7D9C4C4 /* LogsService.swift in Sources */,
+				064D026237691DA84B99FB84 /* MarkdownText.swift in Sources */,
+				B2BD8F3C2C4CBDF4DE77000F /* MemoryCard.swift in Sources */,
+				89BB30326B954A954D419DE1 /* Message.swift in Sources */,
+				E63CEC29C6FC955EE03829E6 /* MessageBubble.swift in Sources */,
+				6575C727C941900031DA142D /* NotificationService.swift in Sources */,
+				6A3E2C07A66F462C89E84941 /* OpenClawMonitor.swift in Sources */,
+				15679767C97F55304C8B8848 /* QuickActionsCard.swift in Sources */,
+				52190A92AD6E0AF32B2D6566 /* QuickReplyChips.swift in Sources */,
+				6131FC084A25848826744467 /* SlashCommandMenu.swift in Sources */,
+				D4D771AFD3C18788C7F75702 /* StatusCard.swift in Sources */,
+				9D2024466F0CAD9F39506088 /* StravaCard.swift in Sources */,
+				AB04300D28E5629C14D5B197 /* TaskItem.swift in Sources */,
+				FCBDE871D93B96F5D3EB23B8 /* TaskService.swift in Sources */,
+				4B61C730D6FD2D587EF7DA0A /* TokenCard.swift in Sources */,
+				6AE9C2325755C8647CF7FA8A /* WeatherCard.swift in Sources */,
+				16BC6B53EBF966926D5ACF91 /* WeatherData.swift in Sources */,
+				22A803713591AF8741719643 /* WidgetData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BD0E8A46BF400BC01DEE089F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1B0673966136ECACE9D3697C /* CommandCenterWidgetExtension */;
+			targetProxy = ED909BAF62D2D2A23BADB354 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		02B551DF068ED51EE0766CD7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CommandCenter/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		169EF82B7C1026F5303888AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CommandCenter/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		1B8BCCA70D55FB736535D15E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CommandCenterWidget/CommandCenterWidget.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Command Center Widget";
+				INFOPLIST_KEY_NSExtension = "<dict>\n  <key>NSExtensionPointIdentifier</key>\n  <string>com.apple.widgetkit-extension</string>\n</dict>\n";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter.widget;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		49BB48C8068B1B0DE564A592 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CommandCenter/CommandCenter.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = CommandCenter/Info.plist;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4E895214CCD14721F80B7ADA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CommandCenter/CommandCenter.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = CommandCenter/Info.plist;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		75BEAAFD603C41DD6709FC6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CommandCenterWidget/CommandCenterWidget.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Command Center Widget";
+				INFOPLIST_KEY_NSExtension = "<dict>\n  <key>NSExtensionPointIdentifier</key>\n  <string>com.apple.widgetkit-extension</string>\n</dict>\n";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter.widget;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DB8425052D22E31CB1D85095 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CommandCenterMac/CommandCenterMac.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CommandCenterMac/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter.mac;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Debug;
+		};
+		DD36360F3219804649E7382C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CommandCenterMac/CommandCenterMac.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CommandCenterMac/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter.mac;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		013BB7601BD24C751E6CB42D /* Build configuration list for PBXProject "CommandCenter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				169EF82B7C1026F5303888AB /* Debug */,
+				02B551DF068ED51EE0766CD7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B8A689281B7BD997209C2464 /* Build configuration list for PBXNativeTarget "CommandCenter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49BB48C8068B1B0DE564A592 /* Debug */,
+				4E895214CCD14721F80B7ADA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BC0C4E3108ADB13EDA459E31 /* Build configuration list for PBXNativeTarget "CommandCenterWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1B8BCCA70D55FB736535D15E /* Debug */,
+				75BEAAFD603C41DD6709FC6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EDE5633BD044179D95263B6A /* Build configuration list for PBXNativeTarget "CommandCenterMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB8425052D22E31CB1D85095 /* Debug */,
+				DD36360F3219804649E7382C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9638EE056B4500953C897095 /* Project object */;
+}

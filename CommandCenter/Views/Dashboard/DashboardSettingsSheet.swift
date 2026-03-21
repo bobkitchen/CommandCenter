@@ -103,11 +103,15 @@ struct DashboardSettingsSheet: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                #if os(iOS)
                 .environment(\.editMode, .constant(.active))
+                #endif
             }
             .navigationTitle("Dashboard Settings")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
