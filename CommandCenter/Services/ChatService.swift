@@ -16,12 +16,15 @@ final class ChatService {
 
     private var pollTask: Task<Void, Never>?
     private var wsTask: Task<Void, Never>?
+    private var connectTask: Task<Void, Never>?
     private var optimisticIds: Set<String> = []
     private var webSocketTask: URLSessionWebSocketTask?
-    private var wsSession: URLSession?  // Must retain the session or the WS dies
+    private var wsSession: URLSession?
     private var wsRetryCount = 0
-    private let maxWsRetries = 3
+    private let maxWsRetries = 5
     private var lastSendTime: Date?
+    private var wsConfirmed = false  // True only after first successful receive
+    private var isStopped = false
 
     var visibleMessages: [Message] {
         messages.filter { !$0.isHidden }
@@ -30,71 +33,99 @@ final class ChatService {
     // MARK: - Lifecycle
 
     func start() async {
+        isStopped = false
+        wsRetryCount = 0
         await loadHistory()
-        await connectWebSocket()
+        startPolling()
+        connectWebSocketInBackground()
     }
 
     func stop() {
+        isStopped = true
         stopPolling()
+        cancelConnectTask()
         disconnectWebSocket()
+    }
+
+    /// Call when app returns to foreground or connectivity is restored
+    func resume() {
+        guard !isStopped else { return }
+        // Always ensure polling is running
+        startPolling()
+        // If WebSocket isn't confirmed, try to reconnect
+        if !wsConfirmed {
+            wsRetryCount = 0
+            connectWebSocketInBackground()
+        } else if let ws = webSocketTask, ws.state != .running {
+            // WebSocket died while backgrounded
+            wsConfirmed = false
+            wsRetryCount = 0
+            connectWebSocketInBackground()
+        }
+        // Immediately refresh history
+        Task { await loadHistory() }
     }
 
     // MARK: - WebSocket
 
+    private func connectWebSocketInBackground() {
+        cancelConnectTask()
+        connectTask = Task { [weak self] in
+            await self?.connectWebSocket()
+        }
+    }
+
+    private func cancelConnectTask() {
+        connectTask?.cancel()
+        connectTask = nil
+    }
+
     private func connectWebSocket() async {
+        guard !isStopped else { return }
         guard let baseURL = getBaseURL() else {
-            startPolling()
+            transport = .polling
             return
         }
 
-        // Convert http(s) to ws(s)
         let wsURL = baseURL
             .replacingOccurrences(of: "https://", with: "wss://")
             .replacingOccurrences(of: "http://", with: "ws://")
 
         guard let url = URL(string: "\(wsURL)/api/chat/ws") else {
-            startPolling()
+            transport = .polling
             return
         }
 
+        print("[Chat] Connecting WebSocket to \(url.absoluteString)")
         transport = .connecting
+
+        // Clean up old connection
         disconnectWebSocket()
 
-        // Use the shared cookie storage so auth cookies are sent with the upgrade request
+        // Build request with cookies
+        var request = URLRequest(url: url)
+        if let cookies = HTTPCookieStorage.shared.cookies(for: URL(string: baseURL)!) {
+            let headers = HTTPCookie.requestHeaderFields(with: cookies)
+            for (key, value) in headers {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+
+        // Create fresh session — use finishTasksAndInvalidate on old one
         let config = URLSessionConfiguration.default
         config.httpCookieStorage = HTTPCookieStorage.shared
         config.httpShouldSetCookies = true
-        // Store session as a property — if it's deallocated, the WebSocket dies
-        wsSession = URLSession(configuration: config)
+        let session = URLSession(configuration: config)
+        wsSession = session
 
-        let ws = wsSession!.webSocketTask(with: url)
+        let ws = session.webSocketTask(with: request)
         webSocketTask = ws
+        wsConfirmed = false
         ws.resume()
 
-        // Start listening in a background task
+        // Start listen loop — WebSocket is "confirmed" on first successful receive
         wsTask = Task { [weak self] in
-            // Give the connection a moment to establish
-            try? await Task.sleep(for: .milliseconds(500))
-
-            // Test the connection with a ping
-            do {
-                try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-                    ws.sendPing { error in
-                        if let error { cont.resume(throwing: error) }
-                        else { cont.resume() }
-                    }
-                }
-                await MainActor.run {
-                    self?.transport = .websocket
-                    self?.wsRetryCount = 0
-                    self?.stopPolling() // WebSocket is live, stop polling
-                }
-                print("[Chat] WebSocket connected")
-                await self?.wsListenLoop(ws)
-            } catch {
-                print("[Chat] WebSocket ping failed: \(error.localizedDescription)")
-                await self?.handleWebSocketDisconnect()
-            }
+            await self?.wsListenLoop(ws)
         }
     }
 
@@ -102,6 +133,13 @@ final class ChatService {
         while !Task.isCancelled && ws.state == .running {
             do {
                 let message = try await ws.receive()
+                // First successful receive confirms the WebSocket is truly working
+                if !wsConfirmed {
+                    wsConfirmed = true
+                    wsRetryCount = 0
+                    transport = .websocket
+                    print("[Chat] WebSocket confirmed after first message")
+                }
                 switch message {
                 case .string(let text):
                     await handleWebSocketMessage(text)
@@ -113,13 +151,14 @@ final class ChatService {
                     break
                 }
             } catch {
+                if Task.isCancelled { return }
                 print("[Chat] WebSocket receive error: \(error.localizedDescription)")
                 break
             }
         }
 
         // Connection dropped — try to reconnect
-        if !Task.isCancelled {
+        if !Task.isCancelled && !isStopped {
             await handleWebSocketDisconnect()
         }
     }
@@ -127,29 +166,39 @@ final class ChatService {
     private func handleWebSocketMessage(_ text: String) async {
         guard let data = text.data(using: .utf8) else { return }
 
-        // Try to decode different message types the server might send
-        // Type 1: A full messages array update
-        if let response = try? JSONDecoder().decode(WSMessagesPayload.self, from: data) {
-            mergeMessages(server: response.messages)
-            if let typing = response.typing {
-                isTyping = typing
-            }
-            return
-        }
-
-        // Type 2: A single new message
+        // Type 1: A single new message or typing indicator
         if let msg = try? JSONDecoder().decode(WSNewMessage.self, from: data) {
             if msg.type == "message", let message = msg.message {
-                // Append if we don't already have it
-                if !messages.contains(where: { $0.id == message.id }) {
+                if messages.contains(where: { $0.id == message.id }) {
+                    return
+                }
+                if let optIdx = messages.firstIndex(where: {
+                    optimisticIds.contains($0.id) &&
+                    $0.role == message.role &&
+                    $0.content.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200) ==
+                    message.content.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200)
+                }) {
+                    optimisticIds.remove(messages[optIdx].id)
+                    messages[optIdx] = message
+                } else {
                     messages.append(message)
                 }
-                // If it's an assistant message, clear typing
                 if message.role == "assistant" {
                     isTyping = false
                 }
             } else if msg.type == "typing" {
                 isTyping = msg.typing ?? false
+            } else if msg.type == "connected" {
+                print("[Chat] WS connected confirmation from server")
+            }
+            return
+        }
+
+        // Type 2: A full messages array update
+        if let response = try? JSONDecoder().decode(WSMessagesPayload.self, from: data) {
+            mergeMessages(server: response.messages)
+            if let typing = response.typing {
+                isTyping = typing
             }
             return
         }
@@ -159,25 +208,35 @@ final class ChatService {
             isTyping = status.typing
             return
         }
-
-        print("[Chat] Unknown WebSocket message: \(text.prefix(200))")
     }
 
     private func handleWebSocketDisconnect() async {
+        wsConfirmed = false
         disconnectWebSocket()
         wsRetryCount += 1
 
+        // Polling is always running as safety net, just make sure transport reflects reality
+        if transport != .polling {
+            transport = .polling
+        }
+        startPolling()
+
+        guard !isStopped else { return }
+
         if wsRetryCount <= maxWsRetries {
-            // Exponential backoff: 1s, 2s, 4s
-            let delay = UInt64(pow(2.0, Double(wsRetryCount - 1)))
+            let delay = min(UInt64(pow(2.0, Double(wsRetryCount - 1))), 30)
             print("[Chat] WebSocket reconnecting in \(delay)s (attempt \(wsRetryCount)/\(maxWsRetries))")
             try? await Task.sleep(for: .seconds(delay))
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled && !isStopped else { return }
             await connectWebSocket()
         } else {
-            // Give up on WebSocket, fall back to polling
-            print("[Chat] WebSocket failed after \(maxWsRetries) attempts, falling back to polling")
-            startPolling()
+            print("[Chat] WebSocket failed after \(maxWsRetries) attempts, staying on polling")
+            // Schedule a background retry in 60s — don't give up forever
+            try? await Task.sleep(for: .seconds(60))
+            guard !Task.isCancelled && !isStopped else { return }
+            wsRetryCount = 0
+            print("[Chat] Retrying WebSocket after cooldown")
+            await connectWebSocket()
         }
     }
 
@@ -186,34 +245,27 @@ final class ChatService {
         wsTask = nil
         webSocketTask?.cancel(with: .goingAway, reason: nil)
         webSocketTask = nil
-        wsSession?.invalidateAndCancel()
+        // Properly invalidate old session to prevent leaks
+        wsSession?.finishTasksAndInvalidate()
         wsSession = nil
     }
 
-    /// Send a message via WebSocket if connected
-    private func sendViaWebSocket(_ text: String) -> Bool {
-        guard let ws = webSocketTask, ws.state == .running else { return false }
-
-        let payload: [String: Any] = ["type": "message", "content": text]
-        guard let data = try? JSONSerialization.data(withJSONObject: payload),
-              let jsonString = String(data: data, encoding: .utf8) else { return false }
-
-        Task {
-            do {
-                try await ws.send(.string(jsonString))
-            } catch {
-                print("[Chat] WebSocket send failed: \(error.localizedDescription)")
-            }
-        }
-        return true
+    /// Attempt to reconnect WebSocket (called from UI retry)
+    func reconnectWebSocket() {
+        wsConfirmed = false
+        wsRetryCount = 0
+        disconnectWebSocket()
+        cancelConnectTask()
+        connectWebSocketInBackground()
     }
 
-    // MARK: - Polling (fallback)
+    // MARK: - Polling (always-on safety net)
 
     func startPolling() {
         guard pollTask == nil else { return }
-        transport = .polling
-        print("[Chat] Starting polling fallback")
+        if transport != .websocket {
+            transport = .polling
+        }
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
                 let interval = self?.adaptivePollInterval ?? 3.0
@@ -230,18 +282,20 @@ final class ChatService {
         pollTask = nil
     }
 
-    /// Adaptive polling: faster when waiting for a reply, slower when idle
+    /// Adaptive polling: faster when waiting for a reply, slower when WebSocket is active
     private var adaptivePollInterval: Double {
-        // If user sent a message in the last 30s, poll fast (waiting for reply)
+        // If WebSocket is confirmed working, poll infrequently as backup
+        if wsConfirmed {
+            return 15.0
+        }
+        // If user sent a message in the last 30s, poll fast
         if let lastSend = lastSendTime,
            Date().timeIntervalSince(lastSend) < 30 {
             return 1.0
         }
-        // If typing indicator is on, poll fast
         if isTyping {
             return 1.0
         }
-        // Normal interval
         return 3.0
     }
 
@@ -254,7 +308,15 @@ final class ChatService {
                 queryItems: [URLQueryItem(name: "limit", value: "200")]
             )
             mergeMessages(server: response.messages)
+            // Clear error on successful load
+            if error != nil { error = nil }
+        } catch let apiError as APIError where apiError == .unauthorized {
+            print("[Chat] History load returned 401 — session expired")
+            self.error = "Session expired — please sign in again"
+            // Stop polling to avoid hammering server with 401s
+            stopPolling()
         } catch {
+            print("[Chat] History load failed: \(error.localizedDescription)")
             self.error = error.localizedDescription
         }
     }
@@ -277,18 +339,14 @@ final class ChatService {
         isTyping = true
         lastSendTime = Date()
 
-        // Try WebSocket first, fall back to REST
-        if transport == .websocket && sendViaWebSocket(trimmed) {
-            return // WebSocket will handle the response
-        }
-
-        // REST fallback
+        // Always send via REST
         do {
             let _: SendResponse = try await APIClient.shared.post(
                 "/api/chat/send",
                 body: ["content": trimmed]
             )
         } catch {
+            print("[Chat] REST send failed: \(error.localizedDescription)")
             optimisticIds.remove(optimisticId)
             messages.removeAll { $0.id == optimisticId }
             isTyping = false
@@ -299,12 +357,6 @@ final class ChatService {
     /// Whether a message is still optimistic (not yet confirmed by server)
     func isOptimistic(_ message: Message) -> Bool {
         optimisticIds.contains(message.id)
-    }
-
-    /// Attempt to reconnect WebSocket (called from UI retry)
-    func reconnectWebSocket() {
-        wsRetryCount = 0
-        Task { await connectWebSocket() }
     }
 
     // MARK: - Private Helpers
@@ -329,6 +381,7 @@ final class ChatService {
 
         for id in matched { optimisticIds.remove(id) }
 
+        // If the server has an assistant reply, all pending user messages must have been received
         if let lastServer = server.last, lastServer.role == "assistant" {
             optimisticIds.removeAll()
             messages = server
@@ -360,6 +413,19 @@ final class ChatService {
     private func getBaseURL() -> String? {
         let url = KeychainHelper.load(key: "server_url") ?? ""
         return url.isEmpty ? nil : url.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    }
+}
+
+// Make APIError equatable for pattern matching
+extension APIError: Equatable {
+    static func == (lhs: APIError, rhs: APIError) -> Bool {
+        switch (lhs, rhs) {
+        case (.invalidURL, .invalidURL): return true
+        case (.invalidResponse, .invalidResponse): return true
+        case (.unauthorized, .unauthorized): return true
+        case (.httpError(let a), .httpError(let b)): return a == b
+        default: return false
+        }
     }
 }
 

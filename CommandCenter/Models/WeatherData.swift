@@ -3,6 +3,7 @@ import Foundation
 struct WeatherResponse: Codable {
     let current: CurrentWeather?
     let forecast: [ForecastDay]?
+    let location: String?
 }
 
 struct CurrentWeather: Codable {

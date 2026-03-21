@@ -22,6 +22,8 @@ struct MacContentView: View {
                     KanbanBoardView()
                 case .logs:
                     LogsViewerView()
+                case .settings:
+                    SettingsView()
                 case nil:
                     DashboardView()
                 }

@@ -11,6 +11,10 @@ struct WidgetData: Codable {
     let uptime: String
     let agentCount: Int
     let lastUpdated: Date
+    let processNames: [String]
+    let processStatuses: [String]
+    let cronActive: Int
+    let cronTotal: Int
 
     static let placeholder = WidgetData(
         isConnected: true,
@@ -19,7 +23,11 @@ struct WidgetData: Codable {
         model: "sonnet-4",
         uptime: "2d 5h",
         agentCount: 3,
-        lastUpdated: Date()
+        lastUpdated: Date(),
+        processNames: ["gateway", "server"],
+        processStatuses: ["online", "online"],
+        cronActive: 3,
+        cronTotal: 5
     )
 
     static func load() -> WidgetData {
@@ -68,10 +76,14 @@ struct CommandCenterWidgetEntryView: View {
             smallWidget
         case .systemMedium:
             mediumWidget
+        case .systemLarge:
+            largeWidget
         default:
             smallWidget
         }
     }
+
+    // MARK: - Small
 
     private var smallWidget: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -79,7 +91,6 @@ struct CommandCenterWidgetEntryView: View {
                 Circle()
                     .fill(entry.data.isConnected ? Color.green : Color.red)
                     .frame(width: 10, height: 10)
-
                 Text("OpenClaw")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.primary)
@@ -94,7 +105,6 @@ struct CommandCenterWidgetEntryView: View {
                     .trim(from: 0, to: min(entry.data.contextPercent / 100, 1))
                     .stroke(contextColor, style: StrokeStyle(lineWidth: 6, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-
                 VStack(spacing: 0) {
                     Text("\(Int(entry.data.contextPercent))")
                         .font(.title2.weight(.bold))
@@ -119,6 +129,8 @@ struct CommandCenterWidgetEntryView: View {
         }
     }
 
+    // MARK: - Medium
+
     private var mediumWidget: some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 6) {
@@ -126,7 +138,6 @@ struct CommandCenterWidgetEntryView: View {
                     Circle()
                         .fill(entry.data.isConnected ? Color.green : Color.red)
                         .frame(width: 10, height: 10)
-
                     Text("OpenClaw")
                         .font(.subheadline.weight(.bold))
                 }
@@ -153,7 +164,6 @@ struct CommandCenterWidgetEntryView: View {
                         .trim(from: 0, to: min(entry.data.contextPercent / 100, 1))
                         .stroke(contextColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                         .rotationEffect(.degrees(-90))
-
                     VStack(spacing: 0) {
                         Text("\(Int(entry.data.contextPercent))")
                             .font(.title.weight(.bold))
@@ -174,6 +184,88 @@ struct CommandCenterWidgetEntryView: View {
             Color.black
         }
     }
+
+    // MARK: - Large
+
+    private var largeWidget: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header
+            HStack {
+                Circle()
+                    .fill(entry.data.isConnected ? Color.green : Color.red)
+                    .frame(width: 10, height: 10)
+                Text("Command Center")
+                    .font(.subheadline.weight(.bold))
+                Spacer()
+                Text(timeAgo)
+                    .font(.system(size: 9))
+                    .foregroundStyle(.tertiary)
+            }
+
+            // Context gauge + stats
+            HStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 8)
+                    Circle()
+                        .trim(from: 0, to: min(entry.data.contextPercent / 100, 1))
+                        .stroke(contextColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                    VStack(spacing: 0) {
+                        Text("\(Int(entry.data.contextPercent))")
+                            .font(.title.weight(.bold))
+                        Text("context")
+                            .font(.system(size: 8))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(width: 80, height: 80)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    statRow("Model", value: entry.data.model)
+                    statRow("Uptime", value: entry.data.uptime)
+                    statRow("Agents", value: "\(entry.data.agentCount)")
+                    statRow("Cron", value: "\(entry.data.cronActive)/\(entry.data.cronTotal)")
+                }
+            }
+
+            Divider()
+                .overlay(Color.gray.opacity(0.3))
+
+            // Process health
+            Text("PROCESSES")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            ForEach(Array(zip(entry.data.processNames, entry.data.processStatuses).enumerated()), id: \.offset) { _, item in
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(item.1 == "online" ? Color.green : Color.red)
+                        .frame(width: 7, height: 7)
+                    Text(item.0)
+                        .font(.caption)
+                    Text(item.1)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+            }
+
+            Spacer()
+
+            // Health summary
+            Text(entry.data.healthSummary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+        }
+        .padding(16)
+        .containerBackground(for: .widget) {
+            Color.black
+        }
+    }
+
+    // MARK: - Helpers
 
     private func statRow(_ label: String, value: String) -> some View {
         HStack(spacing: 4) {
@@ -210,6 +302,6 @@ struct CommandCenterWidget: Widget {
         }
         .configurationDisplayName("Command Center")
         .description("Monitor OpenClaw system health at a glance.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }

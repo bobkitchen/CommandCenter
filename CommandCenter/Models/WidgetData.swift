@@ -10,6 +10,10 @@ struct WidgetData: Codable {
     let uptime: String
     let agentCount: Int
     let lastUpdated: Date
+    let processNames: [String]
+    let processStatuses: [String]
+    let cronActive: Int
+    let cronTotal: Int
 
     static let placeholder = WidgetData(
         isConnected: true,
@@ -18,7 +22,11 @@ struct WidgetData: Codable {
         model: "sonnet-4",
         uptime: "2d 5h",
         agentCount: 3,
-        lastUpdated: Date()
+        lastUpdated: Date(),
+        processNames: ["gateway", "server"],
+        processStatuses: ["online", "online"],
+        cronActive: 3,
+        cronTotal: 5
     )
 
     static func load() -> WidgetData {

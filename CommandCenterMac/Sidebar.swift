@@ -7,6 +7,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     case files = "Files"
     case kanban = "Tasks"
     case logs = "Logs"
+    case settings = "Settings"
 
     var id: String { rawValue }
 
@@ -17,6 +18,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         case .files: return "folder"
         case .kanban: return "rectangle.3.group"
         case .logs: return "terminal"
+        case .settings: return "gearshape"
         }
     }
 }

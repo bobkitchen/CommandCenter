@@ -16,7 +16,6 @@ struct CommandCenterMacApp: App {
                 LoginView()
                     .frame(width: 400, height: 500)
                     .environment(authService)
-                    .task { monitor.startMonitoring() }
             }
         }
         .defaultSize(width: 1200, height: 800)

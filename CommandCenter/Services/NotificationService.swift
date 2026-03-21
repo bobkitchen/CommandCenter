@@ -18,58 +18,70 @@ final class NotificationService {
         }
     }
 
-    /// Called each time the monitor refreshes. Compares previous vs current state.
     func checkForAlerts(monitor: OpenClawMonitor) {
         let currentHealth = monitor.healthState
         let currentContext = monitor.contextPercent
+        let settings = NotificationSettings.load()
 
         // Gateway state change
         if let last = lastHealthState, last != currentHealth {
             switch currentHealth {
             case .critical:
-                sendNotification(
-                    title: "System Alert",
-                    body: monitor.healthSummary,
-                    sound: .defaultCritical
-                )
-                HapticHelper.error()
+                if settings.gatewayAlerts {
+                    sendNotification(
+                        title: "System Alert",
+                        body: monitor.healthSummary,
+                        sound: .defaultCritical,
+                        level: "critical"
+                    )
+                    HapticHelper.error()
+                }
             case .warning:
-                sendNotification(
-                    title: "System Warning",
-                    body: monitor.healthSummary,
-                    sound: .default
-                )
-                HapticHelper.medium()
+                if settings.processAlerts {
+                    sendNotification(
+                        title: "System Warning",
+                        body: monitor.healthSummary,
+                        sound: .default,
+                        level: "warning"
+                    )
+                    HapticHelper.medium()
+                }
             case .healthy:
                 if last == .critical {
                     sendNotification(
                         title: "System Recovered",
                         body: "All systems operational",
-                        sound: .default
+                        sound: .default,
+                        level: "info"
                     )
                     HapticHelper.success()
                 }
             }
         }
 
-        // Context threshold alerts (85% and 95%)
-        if currentContext >= 85 && lastContextPercent < 85 && !contextAlertSent {
-            sendNotification(
-                title: "Context Warning",
-                body: "Main context at \(Int(currentContext))% — consider rotating",
-                sound: .default
-            )
-            contextAlertSent = true
-        } else if currentContext >= 95 && lastContextPercent < 95 {
-            sendNotification(
-                title: "Context Critical",
-                body: "Main context at \(Int(currentContext))% — near exhaustion",
-                sound: .defaultCritical
-            )
+        // Context threshold alerts
+        if settings.contextAlerts {
+            let threshold = settings.contextThreshold
+            if currentContext >= threshold && lastContextPercent < threshold && !contextAlertSent {
+                sendNotification(
+                    title: "Context Warning",
+                    body: "Main context at \(Int(currentContext))% — consider rotating",
+                    sound: .default,
+                    level: "warning"
+                )
+                contextAlertSent = true
+            } else if currentContext >= 95 && lastContextPercent < 95 {
+                sendNotification(
+                    title: "Context Critical",
+                    body: "Main context at \(Int(currentContext))% — near exhaustion",
+                    sound: .defaultCritical,
+                    level: "critical"
+                )
+            }
         }
 
-        // Reset alert flag when context drops
-        if currentContext < 80 {
+        // Reset alert flag when context drops below threshold
+        if currentContext < (settings.contextThreshold - 5) {
             contextAlertSent = false
         }
 
@@ -77,7 +89,10 @@ final class NotificationService {
         lastContextPercent = currentContext
     }
 
-    private func sendNotification(title: String, body: String, sound: UNNotificationSound) {
+    private func sendNotification(title: String, body: String, sound: UNNotificationSound, level: String) {
+        // Record in history
+        AlertHistory.shared.add(title: title, body: body, level: level)
+
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
@@ -86,7 +101,7 @@ final class NotificationService {
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,
-            trigger: nil // Deliver immediately
+            trigger: nil
         )
         UNUserNotificationCenter.current().add(request)
     }

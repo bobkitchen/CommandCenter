@@ -119,5 +119,8 @@ struct DashboardSettingsSheet: View {
                 }
             }
         }
+        #if os(macOS)
+        .frame(minWidth: 420, idealWidth: 480, minHeight: 500, idealHeight: 600)
+        #endif
     }
 }

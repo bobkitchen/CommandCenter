@@ -7,5 +7,9 @@
         <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Command Center uses your location to show local weather on the dashboard.</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>Command Center uses Face ID to quickly unlock the app.</string>
 </dict>
 </plist>

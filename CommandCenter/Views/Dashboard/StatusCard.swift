@@ -170,7 +170,7 @@ struct PM2ProcessStatus: Codable {
 
 struct StatusCard: View {
     let monitor: OpenClawMonitor
-    @State private var expandedSection: Set<String> = []
+    @State private var showDetails = false
     @State private var restartingGateway = false
     @State private var restartingServer = false
     @State private var restartError: String?
@@ -179,30 +179,10 @@ struct StatusCard: View {
     private var isConnected: Bool { monitor.isConnected }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Header
-            HStack {
-                Label("OpenClaw", systemImage: "server.rack")
-                    .font(.headline)
-                    .foregroundStyle(isConnected ? AppColors.success : AppColors.danger)
-
-                Spacer()
-
-                if isConnected {
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(AppColors.success)
-                            .frame(width: 6, height: 6)
-                        Text("Online")
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(AppColors.success)
-                    }
-                }
-            }
-
+        VStack(alignment: .leading, spacing: 16) {
             if monitor.isLoading {
                 ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: 80)
+                    .frame(maxWidth: .infinity, minHeight: 100)
             } else if monitor.loadError {
                 VStack(spacing: 6) {
                     ErrorRetryView(message: "Unable to connect") {
@@ -217,40 +197,55 @@ struct StatusCard: View {
                 }
                 .frame(maxWidth: .infinity, minHeight: 60)
             } else if let status {
-                gatewaySection(status)
+                // === TOP: Big glanceable stats ===
+                topStats(status)
 
-                if let main = status.mainSession {
-                    contextBar(main)
+                // === MIDDLE: Process health dots ===
+                if let procs = status.pm2?.processes, !procs.isEmpty {
+                    processRow(procs)
                 }
 
-                // Expandable Sessions
-                if let sessions = status.sessions, (sessions.total?.intValue ?? 0) > 0 {
-                    sessionsSection(sessions)
+                // === Cron summary (one line) ===
+                if let cron = status.cron, (cron.enabled?.intValue ?? 0) > 0 {
+                    cronSummary(cron)
                 }
 
-                // Agents
-                if let agents = status.agents, !agents.isEmpty {
-                    agentsSection(agents)
-                }
+                // === BOTTOM: Controls & details toggle ===
+                HStack(spacing: 10) {
+                    restartButton("Gateway", isLoading: restartingGateway) {
+                        Task { await restartGateway() }
+                    }
+                    restartButton("Server", isLoading: restartingServer) {
+                        Task { await restartServer() }
+                    }
 
-                // Cron jobs
-                if let cron = status.cron, (cron.total?.intValue ?? 0) > 0 {
-                    cronSection(cron)
-                }
+                    Spacer()
 
-                // PM2 processes
-                if let pm2 = status.pm2, let procs = pm2.processes, !procs.isEmpty {
-                    pm2Section(procs)
+                    Button {
+                        HapticHelper.light()
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            showDetails.toggle()
+                        }
+                    } label: {
+                        Image(systemName: showDetails ? "chevron.up" : "ellipsis")
+                            .font(.caption)
+                            .foregroundStyle(AppColors.muted)
+                            .frame(width: 32, height: 32)
+                            .background(AppColors.muted.opacity(0.1), in: Circle())
+                    }
+                    .buttonStyle(.plain)
                 }
-
-                // Restart controls
-                restartSection
 
                 if let restartError {
                     Text(restartError)
                         .font(.caption2)
                         .foregroundStyle(AppColors.danger)
-                        .frame(maxWidth: .infinity)
+                }
+
+                // === EXPANDED: Detail sections ===
+                if showDetails {
+                    detailsSection(status)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
         }
@@ -259,378 +254,221 @@ struct StatusCard: View {
         .glassCard(tint: isConnected ? AppColors.success.opacity(0.06) : nil)
     }
 
-    // MARK: - Gateway
+    // MARK: - Top Stats
 
     @ViewBuilder
-    private func gatewaySection(_ status: OpenClawStatusResponse) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-            miniStat(label: "Model", value: shortenModel(status.model?.default))
-            miniStat(label: "Uptime", value: formatUptime(status.gateway?.uptime?.value))
-            miniStat(label: "Latency", value: formatLatency(status.gateway?.latency?.value))
-            miniStat(label: "Memory", value: formatMemory(status.gateway?.memory?.value))
-            miniStat(label: "Cron", value: "\(status.cron?.enabled?.intValue ?? 0)/\(status.cron?.total?.intValue ?? 0)")
-            miniStat(label: "Last Active", value: OpenClawMonitor.relativeTime(from: status.mainSession?.lastActivity?.value))
-        }
-    }
-
-    // MARK: - Context Bar with Trend
-
-    @ViewBuilder
-    private func contextBar(_ main: MainSessionInfo) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Main Context")
-                    .font(.caption.weight(.medium))
+    private func topStats(_ status: OpenClawStatusResponse) -> some View {
+        HStack(spacing: 0) {
+            // Uptime — big number
+            VStack(alignment: .leading, spacing: 2) {
+                Text("UPTIME")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(AppColors.muted)
+                Text(formatUptimeBig(status.gateway?.uptime?.value))
+                    .font(.system(size: 28, weight: .light, design: .rounded))
                     .foregroundStyle(AppColors.text)
-
-                // Trend indicator
-                Image(systemName: trendIcon)
-                    .font(.caption2)
-                    .foregroundStyle(trendColor)
-
-                Spacer()
-
-                Text("\(main.percentUsed?.intValue ?? 0)%")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(contextColor(main.percentUsed?.value ?? 0))
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(AppColors.muted.opacity(0.2))
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(contextColor(main.percentUsed?.value ?? 0))
-                        .frame(width: geo.size.width * min(CGFloat(main.percentUsed?.value ?? 0) / 100.0, 1.0))
-                        .animation(.easeOut(duration: 0.5), value: main.percentUsed?.value)
-                }
-            }
-            .frame(height: 6)
-
-            HStack(spacing: 12) {
-                tokenLabel("In", value: main.inputTokens?.intValue)
-                tokenLabel("Out", value: main.outputTokens?.intValue)
-                tokenLabel("Cache R", value: main.cacheRead?.intValue)
-                tokenLabel("Cache W", value: main.cacheWrite?.intValue)
-            }
-        }
-        .padding(10)
-        .background(AppColors.muted.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-
-    // MARK: - Sessions (expandable)
-
-    @ViewBuilder
-    private func sessionsSection(_ sessions: SessionsSummary) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Button {
-                HapticHelper.light()
-                withAnimation(.easeOut(duration: 0.2)) {
-                    toggleSection("sessions")
-                }
-            } label: {
-                HStack {
-                    Label("Sessions", systemImage: "rectangle.stack")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(AppColors.text)
-                    Spacer()
-                    Text("\(sessions.total?.intValue ?? 0)")
-                        .font(.caption2)
-                        .foregroundStyle(AppColors.muted)
-                    Image(systemName: expandedSection.contains("sessions") ? "chevron.up" : "chevron.down")
-                        .font(.caption2)
-                        .foregroundStyle(AppColors.muted)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 4)
-
-            if expandedSection.contains("sessions"), let details = sessions.details {
-                ForEach(details.sorted(by: {
-                    ($0.percentUsed?.value ?? 0) > ($1.percentUsed?.value ?? 0)
-                }), id: \.key) { session in
-                    sessionRow(session)
-                }
-            }
-        }
-    }
-
-    private func sessionRow(_ session: SessionDetail) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
-                Text(session.agent ?? session.key ?? "—")
-                    .font(.caption.weight(.medium))
+            // Model — prominent
+            VStack(alignment: .leading, spacing: 2) {
+                Text("MODEL")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(AppColors.muted)
+                Text(friendlyModel(status.model?.default))
+                    .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(AppColors.text)
                     .lineLimit(1)
-
-                if let model = session.model {
-                    Text(shortenModel(model))
-                        .font(.system(size: 9))
-                        .foregroundStyle(AppColors.muted)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 1)
-                        .background(AppColors.muted.opacity(0.15), in: Capsule())
-                }
-
-                Spacer()
-
-                Text("\(session.percentUsed?.intValue ?? 0)%")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(contextColor(session.percentUsed?.value ?? 0))
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Mini context bar
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(AppColors.muted.opacity(0.15))
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(contextColor(session.percentUsed?.value ?? 0))
-                        .frame(width: geo.size.width * min(CGFloat(session.percentUsed?.value ?? 0) / 100.0, 1.0))
-                }
-            }
-            .frame(height: 3)
-
-            HStack(spacing: 8) {
-                Text("Active \(OpenClawMonitor.relativeTime(from: session.lastActivity?.value))")
-                    .font(.system(size: 9))
+            // Latency
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("LATENCY")
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(AppColors.muted)
-
-                Spacer()
-
-                tokenLabel("In", value: session.inputTokens?.intValue)
-                tokenLabel("Out", value: session.outputTokens?.intValue)
-            }
-        }
-        .padding(8)
-        .background(AppColors.muted.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
-    }
-
-    // MARK: - Agents
-
-    @ViewBuilder
-    private func agentsSection(_ agents: [AgentSummary]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Button {
-                HapticHelper.light()
-                withAnimation(.easeOut(duration: 0.2)) {
-                    toggleSection("agents")
-                }
-            } label: {
-                HStack {
-                    Label("Agents", systemImage: "cpu")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(AppColors.text)
-                    Spacer()
-                    Text("\(agents.filter { ($0.sessionCount?.intValue ?? 0) > 0 }.count) active")
-                        .font(.caption2)
-                        .foregroundStyle(AppColors.muted)
-                    Image(systemName: expandedSection.contains("agents") ? "chevron.up" : "chevron.down")
-                        .font(.caption2)
-                        .foregroundStyle(AppColors.muted)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 4)
-
-            // Always show summary row for each agent
-            ForEach(agents.filter { ($0.sessionCount?.intValue ?? 0) > 0 }, id: \.agentId) { agent in
-                HStack(spacing: 8) {
+                HStack(spacing: 4) {
                     Circle()
-                        .fill(agentColor(agent))
+                        .fill(latencyColor(status.gateway?.latency?.value))
                         .frame(width: 6, height: 6)
-
-                    Text(agent.agentId ?? "—")
-                        .font(.caption.weight(.medium))
+                    Text(formatLatency(status.gateway?.latency?.value))
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundStyle(AppColors.text)
-
-                    Spacer()
-
-                    Text(OpenClawMonitor.relativeTime(from: agent.mostRecent?.value))
-                        .font(.system(size: 9))
-                        .foregroundStyle(AppColors.muted)
-
-                    if let top = agent.topSession {
-                        Text("\(top.percentUsed?.intValue ?? 0)%")
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(contextColor(top.percentUsed?.value ?? 0))
-                    }
-
-                    Text("\(agent.sessionCount?.intValue ?? 0)s")
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(AppColors.muted)
-                        .frame(width: 24, alignment: .trailing)
-                }
-            }
-
-            // Expanded: show top session details per agent
-            if expandedSection.contains("agents") {
-                ForEach(agents.filter { $0.topSession != nil }, id: \.agentId) { agent in
-                    if let top = agent.topSession {
-                        HStack(spacing: 6) {
-                            Text("  \(agent.agentId ?? "—") top:")
-                                .font(.system(size: 9))
-                                .foregroundStyle(AppColors.muted)
-
-                            if let model = top.model {
-                                Text(shortenModel(model))
-                                    .font(.system(size: 9))
-                                    .foregroundStyle(AppColors.muted)
-                            }
-
-                            Spacer()
-
-                            Text("\(formatTokens(top.totalTokens?.intValue)) tokens")
-                                .font(.system(size: 9))
-                                .foregroundStyle(AppColors.muted)
-
-                            Text("\(top.percentUsed?.intValue ?? 0)%")
-                                .font(.system(size: 9, weight: .semibold))
-                                .foregroundStyle(contextColor(top.percentUsed?.value ?? 0))
-                        }
-                    }
                 }
             }
         }
     }
 
-    // MARK: - Cron
+    // MARK: - Process Health Row
 
     @ViewBuilder
-    private func cronSection(_ cron: CronInfo) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            sectionHeader("Cron Jobs", icon: "clock.arrow.circlepath",
-                          count: cron.enabled?.intValue ?? 0, total: cron.total?.intValue ?? 0)
-
-            if let jobs = cron.jobs?.filter({ $0.enabled == true }).prefix(5) {
-                ForEach(Array(jobs), id: \.stableId) { job in
-                    HStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.caption2)
-                            .foregroundStyle(AppColors.success)
-
-                        Text(job.name ?? "Unnamed")
-                            .font(.caption)
-                            .foregroundStyle(AppColors.text)
-                            .lineLimit(1)
-
-                        Spacer()
-
-                        if let sched = job.schedule {
-                            Text(formatSchedule(sched))
-                                .font(.caption2)
-                                .foregroundStyle(AppColors.muted)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: - PM2
-
-    @ViewBuilder
-    private func pm2Section(_ processes: [PM2Process]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            sectionHeader("Processes", icon: "gearshape.2", count: processes.count)
-
+    private func processRow(_ processes: [PM2Process]) -> some View {
+        HStack(spacing: 12) {
             ForEach(processes, id: \.name) { proc in
-                HStack(spacing: 8) {
+                HStack(spacing: 5) {
                     Circle()
                         .fill(proc.status == "online" ? AppColors.success : AppColors.danger)
-                        .frame(width: 6, height: 6)
-
+                        .frame(width: 8, height: 8)
                     Text(proc.name ?? "—")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AppColors.text)
+                        .lineLimit(1)
+                }
+            }
+            Spacer()
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(AppColors.muted.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    // MARK: - Cron Summary
+
+    @ViewBuilder
+    private func cronSummary(_ cron: CronInfo) -> some View {
+        let enabled = cron.enabled?.intValue ?? 0
+        let total = cron.total?.intValue ?? 0
+        let nextJob = cron.jobs?.filter { $0.enabled == true }.first
+
+        HStack(spacing: 6) {
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.caption)
+                .foregroundStyle(AppColors.muted)
+
+            Text("\(enabled)/\(total) jobs active")
+                .font(.caption)
+                .foregroundStyle(AppColors.text)
+
+            if let job = nextJob, let sched = job.schedule {
+                Text("·")
+                    .foregroundStyle(AppColors.muted)
+                Text("\(job.name ?? "Job"): \(formatSchedule(sched))")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.muted)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+        }
+    }
+
+    // MARK: - Restart Button
+
+    private func restartButton(_ label: String, isLoading: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                if isLoading {
+                    ProgressView()
+                        .controlSize(.mini)
+                } else {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 10))
+                }
+                Text(label)
+                    .font(.caption.weight(.medium))
+            }
+            .foregroundStyle(AppColors.warning)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(AppColors.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
+        .disabled(isLoading)
+    }
+
+    // MARK: - Details (Expanded)
+
+    @ViewBuilder
+    private func detailsSection(_ status: OpenClawStatusResponse) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Divider().overlay(AppColors.border)
+
+            // Gateway details
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                detailStat("Memory", formatMemory(status.gateway?.memory?.value))
+                detailStat("Restarts", "\(status.gateway?.restarts?.intValue ?? 0)")
+                detailStat("Last Active", OpenClawMonitor.relativeTime(from: status.mainSession?.lastActivity?.value))
+            }
+
+            // Active agents
+            if let agents = status.agents?.filter({ ($0.sessionCount?.intValue ?? 0) > 0 }), !agents.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "cpu")
+                        .font(.caption2)
+                        .foregroundStyle(AppColors.muted)
+                    Text("\(agents.count) agent\(agents.count == 1 ? "" : "s") active")
                         .font(.caption)
                         .foregroundStyle(AppColors.text)
 
                     Spacer()
 
-                    Text(formatMemory(proc.memory?.value))
-                        .font(.caption2)
+                    Text("\(status.sessions?.total?.intValue ?? 0) sessions")
+                        .font(.caption)
                         .foregroundStyle(AppColors.muted)
+                }
+            }
 
-                    Text(formatUptime(proc.uptime?.value))
-                        .font(.caption2)
-                        .foregroundStyle(AppColors.muted)
+            // Cron job list
+            if let jobs = status.cron?.jobs?.filter({ $0.enabled == true }) {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(jobs.prefix(5)), id: \.stableId) { job in
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.caption2)
+                                .foregroundStyle(AppColors.success)
+                            Text(job.name ?? "Unnamed")
+                                .font(.caption)
+                                .foregroundStyle(AppColors.text)
+                                .lineLimit(1)
+                            Spacer()
+                            if let sched = job.schedule {
+                                Text(formatSchedule(sched))
+                                    .font(.caption2)
+                                    .foregroundStyle(AppColors.muted)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // PM2 process details
+            if let procs = status.pm2?.processes {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(procs, id: \.name) { proc in
+                        HStack(spacing: 8) {
+                            Text(proc.name ?? "—")
+                                .font(.caption)
+                                .foregroundStyle(AppColors.text)
+                            Spacer()
+                            Text(formatMemory(proc.memory?.value))
+                                .font(.caption2)
+                                .foregroundStyle(AppColors.muted)
+                            Text(formatUptime(proc.uptime?.value))
+                                .font(.caption2)
+                                .foregroundStyle(AppColors.muted)
+                        }
+                    }
                 }
             }
         }
     }
 
-    // MARK: - Restart Controls
+    // MARK: - Detail stat
 
-    private var restartSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Label("Controls", systemImage: "power")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(AppColors.text)
-                Spacer()
-            }
-            .padding(.top, 4)
-
-            HStack(spacing: 10) {
-                Button {
-                    Task { await restartGateway() }
-                } label: {
-                    HStack(spacing: 6) {
-                        if restartingGateway {
-                            ProgressView()
-                                .controlSize(.mini)
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.caption2)
-                        }
-                        Text("Restart Gateway")
-                            .font(.caption.weight(.medium))
-                    }
-                    .foregroundStyle(AppColors.warning)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity)
-                    .background(AppColors.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(AppColors.warning.opacity(0.3), lineWidth: 0.5)
-                    )
-                }
-                .buttonStyle(.plain)
-                .disabled(restartingGateway)
-
-                Button {
-                    Task { await restartServer() }
-                } label: {
-                    HStack(spacing: 6) {
-                        if restartingServer {
-                            ProgressView()
-                                .controlSize(.mini)
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.caption2)
-                        }
-                        Text("Restart Server")
-                            .font(.caption.weight(.medium))
-                    }
-                    .foregroundStyle(AppColors.warning)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity)
-                    .background(AppColors.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(AppColors.warning.opacity(0.3), lineWidth: 0.5)
-                    )
-                }
-                .buttonStyle(.plain)
-                .disabled(restartingServer)
-            }
+    private func detailStat(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(label)
+                .font(.system(size: 9))
+                .foregroundStyle(AppColors.muted)
+            Text(value)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(AppColors.text)
+                .lineLimit(1)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
+
+    // MARK: - Restart Actions
 
     private func restartGateway() async {
         restartingGateway = true
@@ -639,11 +477,10 @@ struct StatusCard: View {
         do {
             try await APIClient.shared.postAction("/api/restart/gateway")
             HapticHelper.success()
-            // Wait a moment then refresh status
             try? await Task.sleep(for: .seconds(3))
             await monitor.refresh()
         } catch {
-            restartError = "Gateway restart failed: \(error.localizedDescription)"
+            restartError = "Gateway: \(error.localizedDescription)"
             HapticHelper.error()
         }
         restartingGateway = false
@@ -659,88 +496,50 @@ struct StatusCard: View {
             try? await Task.sleep(for: .seconds(3))
             await monitor.refresh()
         } catch {
-            restartError = "Server restart failed: \(error.localizedDescription)"
+            restartError = "Server: \(error.localizedDescription)"
             HapticHelper.error()
         }
         restartingServer = false
     }
 
-    // MARK: - Helpers
+    // MARK: - Formatters
 
-    private func toggleSection(_ name: String) {
-        if expandedSection.contains(name) {
-            expandedSection.remove(name)
-        } else {
-            expandedSection.insert(name)
-        }
-    }
-
-    private func miniStat(label: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(AppColors.muted)
-            Text(value)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(AppColors.text)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func sectionHeader(_ title: String, icon: String, count: Int, total: Int? = nil) -> some View {
-        HStack {
-            Label(title, systemImage: icon)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(AppColors.text)
-            Spacer()
-            if let total {
-                Text("\(count)/\(total)")
-                    .font(.caption2)
-                    .foregroundStyle(AppColors.muted)
-            } else {
-                Text("\(count)")
-                    .font(.caption2)
-                    .foregroundStyle(AppColors.muted)
-            }
-        }
-        .padding(.top, 4)
-    }
-
-    private func tokenLabel(_ label: String, value: Int?) -> some View {
-        HStack(spacing: 2) {
-            Text(label)
-                .font(.system(size: 9))
-                .foregroundStyle(AppColors.muted)
-            Text(formatTokens(value))
-                .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(AppColors.text)
-        }
-    }
-
-    private func shortenModel(_ model: String?) -> String {
+    private func friendlyModel(_ model: String?) -> String {
         guard let model else { return "—" }
         return model
             .replacingOccurrences(of: "anthropic/", with: "")
             .replacingOccurrences(of: "openai/", with: "")
-            .replacingOccurrences(of: "claude-", with: "")
+            .replacingOccurrences(of: "claude-", with: "Claude ")
+            .replacingOccurrences(of: "-latest", with: "")
+            .replacingOccurrences(of: "-", with: " ")
+            .capitalized
     }
 
-    private func formatUptime(_ ms: Double?) -> String {
+    private func formatUptimeBig(_ ms: Double?) -> String {
         guard let ms, ms > 0 else { return "—" }
         let seconds = Int(ms / 1000)
         let days = seconds / 86400
         let hours = (seconds % 86400) / 3600
-        let minutes = (seconds % 3600) / 60
         if days > 0 { return "\(days)d \(hours)h" }
+        let minutes = (seconds % 3600) / 60
         if hours > 0 { return "\(hours)h \(minutes)m" }
         return "\(minutes)m"
+    }
+
+    private func formatUptime(_ ms: Double?) -> String {
+        formatUptimeBig(ms)
     }
 
     private func formatLatency(_ ms: Double?) -> String {
         guard let ms else { return "—" }
         return "\(Int(ms))ms"
+    }
+
+    private func latencyColor(_ ms: Double?) -> Color {
+        guard let ms else { return AppColors.muted }
+        if ms < 200 { return AppColors.success }
+        if ms < 500 { return AppColors.warning }
+        return AppColors.danger
     }
 
     private func formatMemory(_ bytes: Double?) -> String {
@@ -749,47 +548,6 @@ struct StatusCard: View {
         if mb > 1024 { return String(format: "%.1fGB", mb / 1024) }
         return String(format: "%.0fMB", mb)
     }
-
-    private func formatTokens(_ count: Int?) -> String {
-        guard let count else { return "0" }
-        if count >= 1_000_000 { return String(format: "%.1fM", Double(count) / 1_000_000) }
-        if count >= 1_000 { return String(format: "%.0fK", Double(count) / 1_000) }
-        return "\(count)"
-    }
-
-    private func contextColor(_ pct: Double) -> Color {
-        if pct > 80 { return AppColors.danger }
-        if pct > 50 { return AppColors.warning }
-        return AppColors.success
-    }
-
-    private func agentColor(_ agent: AgentSummary) -> Color {
-        guard let recent = agent.mostRecent?.value else { return AppColors.muted }
-        let age = Date().timeIntervalSince1970 * 1000 - recent
-        if age < 600_000 { return AppColors.success }
-        if age < 3_600_000 { return AppColors.warning }
-        return AppColors.muted
-    }
-
-    // MARK: - Trend
-
-    private var trendIcon: String {
-        switch monitor.contextTrend {
-        case .rising: return "arrow.up.right"
-        case .stable: return "arrow.right"
-        case .falling: return "arrow.down.right"
-        }
-    }
-
-    private var trendColor: Color {
-        switch monitor.contextTrend {
-        case .rising: return AppColors.warning
-        case .stable: return AppColors.muted
-        case .falling: return AppColors.success
-        }
-    }
-
-    // MARK: - Cron Formatting
 
     private func formatSchedule(_ sched: CronSchedule) -> String {
         switch sched.kind {
