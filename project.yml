@@ -73,15 +73,13 @@ targets:
     deploymentTarget: "26.0"
     sources:
       - path: CommandCenterWidget
+        excludes:
+          - Info.plist
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bobkitchen.commandcenter.widget
+        INFOPLIST_FILE: CommandCenterWidget/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: "Command Center Widget"
-        INFOPLIST_KEY_NSExtension: |
-          <dict>
-            <key>NSExtensionPointIdentifier</key>
-            <string>com.apple.widgetkit-extension</string>
-          </dict>
         SWIFT_STRICT_CONCURRENCY: complete
         GENERATE_INFOPLIST_FILE: true
     entitlements:

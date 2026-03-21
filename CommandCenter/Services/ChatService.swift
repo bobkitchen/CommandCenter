@@ -18,6 +18,7 @@ final class ChatService {
     private var wsTask: Task<Void, Never>?
     private var optimisticIds: Set<String> = []
     private var webSocketTask: URLSessionWebSocketTask?
+    private var wsSession: URLSession?  // Must retain the session or the WS dies
     private var wsRetryCount = 0
     private let maxWsRetries = 3
     private var lastSendTime: Date?
@@ -63,9 +64,10 @@ final class ChatService {
         let config = URLSessionConfiguration.default
         config.httpCookieStorage = HTTPCookieStorage.shared
         config.httpShouldSetCookies = true
-        let session = URLSession(configuration: config)
+        // Store session as a property — if it's deallocated, the WebSocket dies
+        wsSession = URLSession(configuration: config)
 
-        let ws = session.webSocketTask(with: url)
+        let ws = wsSession!.webSocketTask(with: url)
         webSocketTask = ws
         ws.resume()
 
@@ -184,6 +186,8 @@ final class ChatService {
         wsTask = nil
         webSocketTask?.cancel(with: .goingAway, reason: nil)
         webSocketTask = nil
+        wsSession?.invalidateAndCancel()
+        wsSession = nil
     }
 
     /// Send a message via WebSocket if connected
