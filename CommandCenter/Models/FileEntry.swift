@@ -1,6 +1,6 @@
 import Foundation
 
-struct FileEntry: Codable, Identifiable {
+struct FileEntry: Codable, Identifiable, Hashable {
     let name: String
     let type: String        // "file" or "directory"
     let size: Int?

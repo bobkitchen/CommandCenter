@@ -17,11 +17,11 @@ struct MacContentView: View {
                 case .chat:
                     ChatView()
                 case .files:
-                    FileBrowserView()
+                    FileManagerView()
                 case .kanban:
                     KanbanBoardView()
                 case .logs:
-                    placeholderView("Logs", icon: "terminal", subtitle: "Log viewer coming soon")
+                    LogsViewerView()
                 case nil:
                     DashboardView()
                 }
