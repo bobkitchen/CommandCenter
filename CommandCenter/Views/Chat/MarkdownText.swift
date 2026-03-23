@@ -207,18 +207,29 @@ struct MarkdownText: View {
     }
 
     /// Parse inline markdown: **bold**, *italic*, `code`
+    /// Accumulates plain characters into a buffer to avoid per-character Text() allocation
     private func styledInline(_ text: String) -> Text {
         var result = Text("")
         var remaining = text[text.startIndex...]
+        var plainBuffer = ""
+
+        func flushPlain() {
+            if !plainBuffer.isEmpty {
+                result = result + Text(plainBuffer)
+                plainBuffer = ""
+            }
+        }
 
         while !remaining.isEmpty {
             if remaining.hasPrefix("**"),
                let endRange = remaining[remaining.index(remaining.startIndex, offsetBy: 2)...].range(of: "**") {
+                flushPlain()
                 let content = remaining[remaining.index(remaining.startIndex, offsetBy: 2)..<endRange.lowerBound]
                 result = result + Text(content).bold()
                 remaining = remaining[endRange.upperBound...]
             } else if remaining.hasPrefix("`"),
                       let endIdx = remaining[remaining.index(after: remaining.startIndex)...].firstIndex(of: "`") {
+                flushPlain()
                 let content = remaining[remaining.index(after: remaining.startIndex)..<endIdx]
                 result = result + Text(content)
                     .font(.system(.body, design: .monospaced))
@@ -226,16 +237,17 @@ struct MarkdownText: View {
                 remaining = remaining[remaining.index(after: endIdx)...]
             } else if remaining.hasPrefix("*"),
                       let endIdx = remaining[remaining.index(after: remaining.startIndex)...].firstIndex(of: "*") {
+                flushPlain()
                 let content = remaining[remaining.index(after: remaining.startIndex)..<endIdx]
                 result = result + Text(content).italic()
                 remaining = remaining[remaining.index(after: endIdx)...]
             } else {
-                let char = remaining[remaining.startIndex]
-                result = result + Text(String(char))
+                plainBuffer.append(remaining[remaining.startIndex])
                 remaining = remaining[remaining.index(after: remaining.startIndex)...]
             }
         }
 
+        flushPlain()
         return result
     }
 
