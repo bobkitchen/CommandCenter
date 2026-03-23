@@ -106,7 +106,7 @@ interface Message {
   role: string;        // "user" | "assistant" | "system"
   content: string;     // Message text (markdown supported)
   timestamp: string;   // ISO 8601 format (e.g., "2026-03-20T14:30:00Z")
-  channel?: string;    // "web" | "ios" | "irc" | etc. (optional)
+  channel?: string;    // "web" | "ios" | "irc" | "telegram" | etc. (optional)
 }
 ```
 
@@ -140,10 +140,84 @@ iOS App                          Server
 
 ## Multi-Client Broadcasting
 
-If Bob has multiple clients connected (iOS app, web dashboard, IRC):
-- When a message arrives from **any** client, broadcast it to **all** connected WebSocket clients
-- This ensures the iOS app sees messages Bob sent from the web dashboard and vice versa
-- The `channel` field helps identify the source ("ios", "web", "irc")
+If Bob has multiple clients connected (iOS app, web dashboard, IRC, Telegram):
+- When a message arrives from **any** client or channel, broadcast it to **all** connected WebSocket clients
+- This ensures the iOS app sees messages Bob sent from Telegram, the web dashboard, IRC, and vice versa
+- The `channel` field identifies the source: `"ios"`, `"web"`, `"irc"`, `"telegram"`
+
+## Cross-Channel Message Sync (CRITICAL)
+
+**All channels must share the same message history.** The iOS Command Center app and Telegram must show identical conversations. This requires three things:
+
+### 1. History endpoint must return ALL channels
+
+`GET /api/chat/history` must return messages from every channel — web, ios, irc, telegram. Do NOT filter by channel. The query should be:
+
+```sql
+-- CORRECT: return all messages regardless of channel
+SELECT * FROM messages ORDER BY timestamp DESC LIMIT 200
+
+-- WRONG: filtering by channel breaks cross-platform sync
+SELECT * FROM messages WHERE channel IN ('web', 'ios') ORDER BY timestamp DESC LIMIT 200
+```
+
+### 2. Telegram messages must broadcast to WebSocket clients
+
+When a message arrives from Telegram, the server must:
+
+1. Store it in the database with `channel: "telegram"` and `role: "user"`
+2. **Broadcast it to all connected WebSocket clients** using the standard envelope:
+
+```json
+{
+  "type": "message",
+  "message": {
+    "id": "msg_tg_12345",
+    "role": "user",
+    "content": "Message sent from Telegram",
+    "timestamp": "2026-03-21T10:30:00Z",
+    "channel": "telegram"
+  }
+}
+```
+
+3. When Denny replies to a Telegram message, that reply must also broadcast to all WebSocket clients:
+
+```json
+{
+  "type": "message",
+  "message": {
+    "id": "msg_reply_456",
+    "role": "assistant",
+    "content": "Denny's response...",
+    "timestamp": "2026-03-21T10:30:05Z",
+    "channel": "telegram"
+  }
+}
+```
+
+### 3. iOS/web messages must forward to Telegram
+
+When a message arrives from the iOS app or web dashboard:
+
+1. Store it and broadcast to WebSocket clients (existing behavior)
+2. **Also send it to the Telegram chat** so the Telegram side sees messages sent from Command Center
+
+This creates a true bidirectional bridge:
+```
+Telegram → Server → WebSocket broadcast → iOS app, web dashboard
+iOS app  → Server → WebSocket broadcast → web dashboard + Telegram forward
+Web      → Server → WebSocket broadcast → iOS app + Telegram forward
+```
+
+### 4. Message roles must be consistent
+
+Regardless of which channel a message arrives from:
+- Human messages: `role: "user"` (whether from Telegram, iOS, web, or IRC)
+- Denny's responses: `role: "assistant"`
+- System messages: `role: "system"` (these are hidden in the iOS app)
+
+Do **NOT** use channel-specific roles like `role: "telegram"` — the iOS app will not display them correctly.
 
 ## Error Handling
 
@@ -203,6 +277,23 @@ wss.on('connection', (ws) => {
 
         // ... wait for Denny to respond ...
 
+        // Broadcast the user's message to ALL clients (so other clients see it)
+        broadcast({
+          type: 'message',
+          message: {
+            id: userMsg.id,
+            role: 'user',
+            content: parsed.content,
+            timestamp: new Date().toISOString(),
+            channel: 'ios'  // or 'web' depending on source
+          }
+        });
+
+        // Forward to Telegram so Telegram users see it too
+        await sendToTelegram(parsed.content);
+
+        // ... wait for Denny to respond ...
+
         // Broadcast the response to ALL clients
         broadcast({
           type: 'message',
@@ -214,6 +305,9 @@ wss.on('connection', (ws) => {
             channel: 'web'
           }
         });
+
+        // Forward Denny's reply to Telegram too
+        await sendToTelegram(response.content);
       }
     } catch (e) {
       console.warn('[WS] Bad message:', e.message);
@@ -231,6 +325,51 @@ function broadcast(data) {
     }
   });
 }
+```
+
+## Telegram Integration Example
+
+When a Telegram message arrives, the handler must broadcast to WebSocket clients:
+
+```javascript
+// In your Telegram bot handler (e.g., node-telegram-bot-api)
+bot.on('message', async (msg) => {
+  const userMessage = {
+    id: `tg_${msg.message_id}`,
+    role: 'user',
+    content: msg.text,
+    timestamp: new Date().toISOString(),
+    channel: 'telegram'
+  };
+
+  // 1. Store in database
+  await db.insertMessage(userMessage);
+
+  // 2. Broadcast to ALL WebSocket clients (iOS app, web dashboard, etc.)
+  broadcast({ type: 'message', message: userMessage });
+
+  // 3. Send typing indicator
+  broadcast({ type: 'typing', typing: true });
+
+  // 4. Get Denny's response
+  const response = await getDennyResponse(msg.text);
+
+  // 5. Store Denny's reply
+  const assistantMessage = {
+    id: `tg_reply_${Date.now()}`,
+    role: 'assistant',
+    content: response,
+    timestamp: new Date().toISOString(),
+    channel: 'telegram'
+  };
+  await db.insertMessage(assistantMessage);
+
+  // 6. Broadcast Denny's reply to WebSocket clients
+  broadcast({ type: 'message', message: assistantMessage });
+
+  // 7. Send reply back to Telegram
+  bot.sendMessage(msg.chat.id, response);
+});
 ```
 
 ## Testing
@@ -259,4 +398,8 @@ The iOS app will detect the WebSocket automatically on next launch — the toolb
 3. **Validate `cc_session` cookie** on upgrade
 4. **Handle incoming `{"type":"message","content":"..."}` from clients**
 5. **Broadcast `{"type":"message","message":{...}}` and `{"type":"typing","typing":bool}` to all connected clients**
-6. **That's it** — the iOS client handles everything else (reconnection, fallback, auth)
+6. **Return ALL channels from `/api/chat/history`** — do not filter by channel
+7. **Broadcast Telegram messages to WebSocket clients** — when Telegram delivers a message, call `broadcast()` so iOS and web see it in real-time
+8. **Forward iOS/web messages to Telegram** — when a message arrives from Command Center, send it to the Telegram chat too
+9. **Use consistent roles** — `role: "user"` for all human messages regardless of channel, `role: "assistant"` for all Denny responses
+10. **That's it** — the iOS client accepts messages from all channels with zero filtering

@@ -181,7 +181,7 @@
 		277C656C273EB979584F1C85 /* KanbanCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanbanCardView.swift; sourceTree = "<group>"; };
 		2929DD8A0C7091054B6030C6 /* AlertHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertHistory.swift; sourceTree = "<group>"; };
 		296348478AB374320B8CF8C7 /* MacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacApp.swift; sourceTree = "<group>"; };
-		2985B323B2FF16EEFD0EB982 /* CommandCenterWidgetExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CommandCenterWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2985B323B2FF16EEFD0EB982 /* CommandCenterWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CommandCenterWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3ACA918741CECF0860F7C4 /* QuickActionsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionsCard.swift; sourceTree = "<group>"; };
 		2D6E67F0BAED8BC912007A36 /* AttachmentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentPreview.swift; sourceTree = "<group>"; };
 		32BC936E13312666CC799E9D /* FileEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileEntry.swift; sourceTree = "<group>"; };
@@ -189,7 +189,7 @@
 		3E8CEBB8098EEADC0678AD60 /* StatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusCard.swift; sourceTree = "<group>"; };
 		4659597E019AAEEE29E3FDB5 /* SlashCommandMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommandMenu.swift; sourceTree = "<group>"; };
 		4D62183CEED4A33C10CD971B /* LogsViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsViewerView.swift; sourceTree = "<group>"; };
-		5213DC607D307D7430723E88 /* CommandCenter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CommandCenter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5213DC607D307D7430723E88 /* CommandCenter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CommandCenter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F0518115E37EEB0092EEC5B /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		635087A5591A18A76A5E5C3A /* DashboardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardConfig.swift; sourceTree = "<group>"; };
 		668FF620A025B510D3CBDEF2 /* WeatherCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCard.swift; sourceTree = "<group>"; };
@@ -503,8 +503,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 013BB7601BD24C751E6CB42D /* Build configuration list for PBXProject "CommandCenter" */;
 			developmentRegion = en;
@@ -837,6 +835,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = CommandCenterWidget/CommandCenterWidget.entitlements;
+				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CommandCenterWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Command Center Widget";
@@ -860,6 +859,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = CommandCenter/CommandCenter.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				INFOPLIST_FILE = CommandCenter/Info.plist;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -883,6 +883,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = CommandCenter/CommandCenter.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				INFOPLIST_FILE = CommandCenter/Info.plist;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -903,6 +904,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = CommandCenterWidget/CommandCenterWidget.entitlements;
+				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CommandCenterWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Command Center Widget";
@@ -924,7 +926,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = CommandCenterMac/CommandCenterMac.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CommandCenterMac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -933,6 +938,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter.mac;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = complete;
 			};
@@ -943,7 +949,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = CommandCenterMac/CommandCenterMac.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CommandCenterMac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -952,6 +961,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter.mac;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = complete;
 			};
