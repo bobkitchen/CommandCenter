@@ -66,9 +66,9 @@ final class StravaService {
             return
         }
 
-        let redirectURI = "commandcenter://commandcenter.app/exchange_token"
+        let redirectURI = "commandcenter://localhost/exchange_token"
         let scope = "activity:read_all,profile:read_all"
-        let authURL = "https://www.strava.com/oauth/mobile/authorize"
+        let authURL = "https://www.strava.com/oauth/authorize"
             + "?client_id=\(clientId)"
             + "&redirect_uri=\(redirectURI)"
             + "&response_type=code"
