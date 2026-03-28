@@ -230,7 +230,7 @@ struct StravaSetupSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("Create a Strava API app at strava.com/settings/api, then enter your credentials below.")
+                    Text("Create a Strava API app at strava.com/settings/api. Set the Authorization Callback Domain to \"commandcenter.app\", then enter your credentials below.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
