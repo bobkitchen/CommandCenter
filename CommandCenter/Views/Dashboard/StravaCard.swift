@@ -27,7 +27,7 @@ struct StravaActivity: Codable, Identifiable {
 
     var displayDistance: String {
         guard let d = distance else { return "—" }
-        return String(format: "%.1f mi", d / 1609.34)
+        return String(format: "%.1f km", d / 1000)
     }
 
     var displayTime: String {
@@ -179,12 +179,12 @@ struct StravaCard: View {
             HStack(spacing: 16) {
                 statBadge(
                     icon: "figure.run",
-                    value: "\(Int((ytdRun.distance ?? 0) / 1609.34)) mi",
+                    value: "\(Int((ytdRun.distance ?? 0) / 1000)) km",
                     label: "YTD Run"
                 )
                 statBadge(
                     icon: "bicycle",
-                    value: "\(Int((ytdRide.distance ?? 0) / 1609.34)) mi",
+                    value: "\(Int((ytdRide.distance ?? 0) / 1000)) km",
                     label: "YTD Ride"
                 )
             }

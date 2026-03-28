@@ -50,7 +50,7 @@ struct WeatherCard: View {
 
                         HStack(spacing: 12) {
                             Label("\(Int(current.humidity ?? 0))%", systemImage: "humidity.fill")
-                            Label("\(Int(current.wind ?? 0)) mph", systemImage: "wind")
+                            Label("\(Int(current.wind ?? 0)) km/h", systemImage: "wind")
                         }
                         .font(.caption)
                         .foregroundStyle(AppColors.muted)
