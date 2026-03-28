@@ -111,10 +111,12 @@
 		B2BD8F3C2C4CBDF4DE77000F /* MemoryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E7A893A9AEE048FA9DD896E /* MemoryCard.swift */; };
 		B8FF855E441573BC555CB286 /* WeatherCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668FF620A025B510D3CBDEF2 /* WeatherCard.swift */; };
 		B91FDDF92BDC4B1C89C085B8 /* SyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C4BACF8DCC2C983FD9E89F /* SyntaxHighlighter.swift */; };
+		BA81FFB6F392308DEBD1E879 /* StravaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB2EEACBEFAC5282D044BA3 /* StravaService.swift */; };
 		C3AECBA82E27B90D33CAB383 /* LogsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726C8CA996488A835AFE3F01 /* LogsService.swift */; };
 		C400B2217DF06C1F893DFDBF /* HapticHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10083FF6E6FA8EC6E42933E1 /* HapticHelper.swift */; };
 		C40DBDE31E72569CD3F06EDA /* KanbanCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C656C273EB979584F1C85 /* KanbanCardView.swift */; };
 		C62AB45E9F0B75D6AA34D753 /* NotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB36AE31F7F946A0BFC1DC6F /* NotificationSettings.swift */; };
+		C64559FE576E6ECB1EABB164 /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487914443A029DF8F3377349 /* WeatherService.swift */; };
 		C797F97EA205D62E53CCF1AD /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7925B23860CE14FEB431F46F /* ChatView.swift */; };
 		C972608228191A98ED4C1F08 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0F6BD5D1B5C5E788A1979BB /* AuthService.swift */; };
 		CA31F2D61D64E946F9BD89FD /* FileManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11C371FC13BBB70E9BC206 /* FileManagerView.swift */; };
@@ -134,11 +136,13 @@
 		E63CEC29C6FC955EE03829E6 /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7001BA59729030F4121B7356 /* MessageBubble.swift */; };
 		EA32C96832BB3CE24B700678 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10CFCF266D71B87C6E1858BF /* ContentView.swift */; };
 		F09D147342960E9372DC8B95 /* CommandPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C4C98A5277C003D4BD83E8 /* CommandPalette.swift */; };
+		F2CC5D93A0CBD5291BCB6419 /* StravaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB2EEACBEFAC5282D044BA3 /* StravaService.swift */; };
 		F2F75719879BBEE80397F3BB /* ChatAttachmentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDDA34614EF23B0405C95B9B /* ChatAttachmentPicker.swift */; };
 		F97DB96DD8F3BE8D3522C446 /* AttachmentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6E67F0BAED8BC912007A36 /* AttachmentPreview.swift */; };
 		F9999CDE90D0AF5438289EF6 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24BAB86739994A802696857 /* AppTheme.swift */; };
 		FCBDE871D93B96F5D3EB23B8 /* TaskService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC5F6A08B798ED3F0DDB67B /* TaskService.swift */; };
 		FD435B6C0F77626D6C62FC07 /* AlertHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5DA54AD8DA10A08B26C19C1 /* AlertHistoryView.swift */; };
+		FF3AC5DAC05D0D823DF4F905 /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487914443A029DF8F3377349 /* WeatherService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -181,15 +185,17 @@
 		277C656C273EB979584F1C85 /* KanbanCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanbanCardView.swift; sourceTree = "<group>"; };
 		2929DD8A0C7091054B6030C6 /* AlertHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertHistory.swift; sourceTree = "<group>"; };
 		296348478AB374320B8CF8C7 /* MacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacApp.swift; sourceTree = "<group>"; };
-		2985B323B2FF16EEFD0EB982 /* CommandCenterWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CommandCenterWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2985B323B2FF16EEFD0EB982 /* CommandCenterWidgetExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CommandCenterWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3ACA918741CECF0860F7C4 /* QuickActionsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionsCard.swift; sourceTree = "<group>"; };
 		2D6E67F0BAED8BC912007A36 /* AttachmentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentPreview.swift; sourceTree = "<group>"; };
 		32BC936E13312666CC799E9D /* FileEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileEntry.swift; sourceTree = "<group>"; };
 		3C74C5127B0BD6EB5ACA15F9 /* FilePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePreviewView.swift; sourceTree = "<group>"; };
+		3DB2EEACBEFAC5282D044BA3 /* StravaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaService.swift; sourceTree = "<group>"; };
 		3E8CEBB8098EEADC0678AD60 /* StatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusCard.swift; sourceTree = "<group>"; };
 		4659597E019AAEEE29E3FDB5 /* SlashCommandMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommandMenu.swift; sourceTree = "<group>"; };
+		487914443A029DF8F3377349 /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
 		4D62183CEED4A33C10CD971B /* LogsViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsViewerView.swift; sourceTree = "<group>"; };
-		5213DC607D307D7430723E88 /* CommandCenter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CommandCenter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5213DC607D307D7430723E88 /* CommandCenter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CommandCenter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F0518115E37EEB0092EEC5B /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		635087A5591A18A76A5E5C3A /* DashboardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardConfig.swift; sourceTree = "<group>"; };
 		668FF620A025B510D3CBDEF2 /* WeatherCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherCard.swift; sourceTree = "<group>"; };
@@ -317,7 +323,9 @@
 				726C8CA996488A835AFE3F01 /* LogsService.swift */,
 				FD5E96E8178253B899F6BD34 /* NotificationService.swift */,
 				6C32BA80E0F63050F7ECDC61 /* OpenClawMonitor.swift */,
+				3DB2EEACBEFAC5282D044BA3 /* StravaService.swift */,
 				DDC5F6A08B798ED3F0DDB67B /* TaskService.swift */,
+				487914443A029DF8F3377349 /* WeatherService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -503,6 +511,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = 013BB7601BD24C751E6CB42D /* Build configuration list for PBXProject "CommandCenter" */;
 			developmentRegion = en;
@@ -620,12 +630,14 @@
 				4B9B902BFA05D39740BD10DC /* SlashCommandMenu.swift in Sources */,
 				6F28C02DB3AD860437AEDA4B /* StatusCard.swift in Sources */,
 				B03D20353CF1438F6377D527 /* StravaCard.swift in Sources */,
+				BA81FFB6F392308DEBD1E879 /* StravaService.swift in Sources */,
 				B91FDDF92BDC4B1C89C085B8 /* SyntaxHighlighter.swift in Sources */,
 				08AEB5A99D6B7BA4B1634A86 /* TaskItem.swift in Sources */,
 				0C473EA395796A6E8FFB307A /* TaskService.swift in Sources */,
 				0028C214765583A97277CC65 /* TokenCard.swift in Sources */,
 				B8FF855E441573BC555CB286 /* WeatherCard.swift in Sources */,
 				21DE6A5A3B657BA054FAC752 /* WeatherData.swift in Sources */,
+				FF3AC5DAC05D0D823DF4F905 /* WeatherService.swift in Sources */,
 				5E3D7FAD3AB9700D7B07B933 /* WidgetData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -685,12 +697,14 @@
 				6131FC084A25848826744467 /* SlashCommandMenu.swift in Sources */,
 				D4D771AFD3C18788C7F75702 /* StatusCard.swift in Sources */,
 				9D2024466F0CAD9F39506088 /* StravaCard.swift in Sources */,
+				F2CC5D93A0CBD5291BCB6419 /* StravaService.swift in Sources */,
 				CABF9FEC277CB1A98272BD59 /* SyntaxHighlighter.swift in Sources */,
 				AB04300D28E5629C14D5B197 /* TaskItem.swift in Sources */,
 				FCBDE871D93B96F5D3EB23B8 /* TaskService.swift in Sources */,
 				4B61C730D6FD2D587EF7DA0A /* TokenCard.swift in Sources */,
 				6AE9C2325755C8647CF7FA8A /* WeatherCard.swift in Sources */,
 				16BC6B53EBF966926D5ACF91 /* WeatherData.swift in Sources */,
+				C64559FE576E6ECB1EABB164 /* WeatherService.swift in Sources */,
 				22A803713591AF8741719643 /* WidgetData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -835,7 +849,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = CommandCenterWidget/CommandCenterWidget.entitlements;
-				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CommandCenterWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Command Center Widget";
@@ -859,7 +872,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = CommandCenter/CommandCenter.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				INFOPLIST_FILE = CommandCenter/Info.plist;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -883,7 +895,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = CommandCenter/CommandCenter.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				INFOPLIST_FILE = CommandCenter/Info.plist;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -904,7 +915,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = CommandCenterWidget/CommandCenterWidget.entitlements;
-				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CommandCenterWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Command Center Widget";
@@ -926,10 +936,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = CommandCenterMac/CommandCenterMac.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CommandCenterMac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -938,7 +945,6 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter.mac;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = complete;
 			};
@@ -949,10 +955,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = CommandCenterMac/CommandCenterMac.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = ZW6EQ2JWKC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CommandCenterMac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -961,7 +964,6 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bobkitchen.commandcenter.mac;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = complete;
 			};

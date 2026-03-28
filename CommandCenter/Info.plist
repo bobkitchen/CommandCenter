@@ -11,5 +11,16 @@
     <string>Command Center uses your location to show local weather on the dashboard.</string>
     <key>NSFaceIDUsageDescription</key>
     <string>Command Center uses Face ID to quickly unlock the app.</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>commandcenter</string>
+            </array>
+            <key>CFBundleURLName</key>
+            <string>com.bobkitchen.commandcenter</string>
+        </dict>
+    </array>
 </dict>
 </plist>
