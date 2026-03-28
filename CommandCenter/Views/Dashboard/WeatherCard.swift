@@ -1,12 +1,11 @@
 import SwiftUI
+import CoreLocation
 
 struct WeatherCard: View {
-    @State private var weather: WeatherResponse?
-    @State private var isLoading = true
-    @State private var loadError = false
-    @State private var errorDetail: String?
+    @State private var weather = WeatherService.shared
     @State private var location = LocationService.shared
-    @State private var hasFetchedWithLocation = false
+    @State private var locationName: String?
+    @State private var hasFetched = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -17,22 +16,22 @@ struct WeatherCard: View {
 
                 Spacer()
 
-                if let name = weather?.location {
+                if let name = locationName {
                     Text(name)
                         .font(.caption2)
                         .foregroundStyle(AppColors.muted)
                 }
             }
 
-            if isLoading {
+            if weather.isLoading && weather.current == nil {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 60)
-            } else if loadError {
-                ErrorRetryView(message: errorDetail ?? "Unable to load weather") {
-                    Task { await loadWeather() }
+            } else if let error = weather.error, weather.current == nil {
+                ErrorRetryView(message: error) {
+                    Task { await fetchWeather() }
                 }
                 .frame(maxWidth: .infinity, minHeight: 60)
-            } else if let current = weather?.current {
+            } else if let current = weather.current?.current {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(weatherEmoji(current.icon))
@@ -51,14 +50,14 @@ struct WeatherCard: View {
 
                         HStack(spacing: 12) {
                             Label("\(Int(current.humidity ?? 0))%", systemImage: "humidity.fill")
-                            Label("\(Int(current.wind ?? 0))km/h", systemImage: "wind")
+                            Label("\(Int(current.wind ?? 0)) mph", systemImage: "wind")
                         }
                         .font(.caption)
                         .foregroundStyle(AppColors.muted)
                     }
                 }
 
-                if let forecast = weather?.forecast, !forecast.isEmpty {
+                if let forecast = weather.current?.forecast, !forecast.isEmpty {
                     Divider().overlay(AppColors.border)
                     HStack(spacing: 0) {
                         ForEach(forecast.prefix(5)) { day in
@@ -86,45 +85,43 @@ struct WeatherCard: View {
         .glassCard()
         .task {
             location.requestLocation()
-            await loadWeather()
+            // If we already have location, fetch immediately
+            if location.latitude != nil {
+                await fetchWeather()
+            }
         }
         .onChange(of: location.latitude) {
-            guard !hasFetchedWithLocation, location.latitude != nil else { return }
-            hasFetchedWithLocation = true
-            Task { await loadWeather() }
+            guard !hasFetched, location.latitude != nil else { return }
+            Task { await fetchWeather() }
         }
     }
 
-    private func loadWeather() async {
-        isLoading = true
-        loadError = false
-        errorDetail = nil
-        do {
-            let coords = location.queryItems
-            print("[Weather] Loading with coords: \(coords?.map { "\($0.name)=\($0.value ?? "")" } ?? ["none"])")
-            weather = try await APIClient.shared.get("/api/weather", queryItems: coords)
-            print("[Weather] Loaded OK – location: \(weather?.location ?? "nil"), temp: \(weather?.current?.temp ?? -999)")
-        } catch let apiError as APIError {
-            loadError = true
-            errorDetail = apiError.errorDescription
-            print("[Weather] API error: \(apiError.errorDescription ?? "unknown")")
-        } catch let decodingError as DecodingError {
-            loadError = true
-            switch decodingError {
-            case .keyNotFound(let key, _):
-                errorDetail = "Missing field: \(key.stringValue)"
-            case .typeMismatch(let type, let ctx):
-                errorDetail = "Type mismatch at \(ctx.codingPath.map(\.stringValue).joined(separator: ".")): expected \(type)"
-            default:
-                errorDetail = "Decoding error"
-            }
-            print("[Weather] Decode error: \(decodingError)")
-        } catch {
-            loadError = true
-            errorDetail = error.localizedDescription
-            print("[Weather] Error: \(error)")
+    private func fetchWeather() async {
+        guard let lat = location.latitude, let lon = location.longitude else {
+            // Fallback to Boise if no location available
+            hasFetched = true
+            await weather.fetch(latitude: 43.6150, longitude: -116.2023)
+            await reverseGeocode(latitude: 43.6150, longitude: -116.2023)
+            return
         }
-        isLoading = false
+        hasFetched = true
+        await weather.fetch(latitude: lat, longitude: lon)
+        await reverseGeocode(latitude: lat, longitude: lon)
+    }
+
+    private func reverseGeocode(latitude: Double, longitude: Double) async {
+        let geocoder = CLGeocoder()
+        let loc = CLLocation(latitude: latitude, longitude: longitude)
+        do {
+            let placemarks = try await geocoder.reverseGeocodeLocation(loc)
+            if let place = placemarks.first {
+                locationName = [place.locality, place.administrativeArea]
+                    .compactMap { $0 }
+                    .joined(separator: ", ")
+            }
+        } catch {
+            print("[Weather] Geocode error: \(error.localizedDescription)")
+        }
     }
 
     private func weatherEmoji(_ icon: String?) -> String {
