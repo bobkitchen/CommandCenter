@@ -20,8 +20,8 @@ final class WeatherService {
             + "?latitude=\(latitude)&longitude=\(longitude)"
             + "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code"
             + "&daily=weather_code,temperature_2m_max,temperature_2m_min"
-            + "&temperature_unit=fahrenheit"
-            + "&wind_speed_unit=mph"
+            + "&temperature_unit=celsius"
+            + "&wind_speed_unit=kmh"
             + "&timezone=auto"
             + "&forecast_days=6"
 

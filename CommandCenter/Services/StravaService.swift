@@ -66,9 +66,9 @@ final class StravaService {
             return
         }
 
-        let redirectURI = "commandcenter://strava/callback"
+        let redirectURI = "http://localhost/exchange_token"
         let scope = "activity:read_all,profile:read_all"
-        let authURL = "https://www.strava.com/oauth/mobile/authorize"
+        let authURL = "https://www.strava.com/oauth/authorize"
             + "?client_id=\(clientId)"
             + "&redirect_uri=\(redirectURI)"
             + "&response_type=code"
@@ -84,7 +84,7 @@ final class StravaService {
             let callbackURL: URL = try await withCheckedThrowingContinuation { continuation in
                 let session = ASWebAuthenticationSession(
                     url: url,
-                    callbackURLScheme: "commandcenter"
+                    callbackURLScheme: "http"
                 ) { url, error in
                     if let error {
                         continuation.resume(throwing: error)
