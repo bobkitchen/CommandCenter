@@ -8,6 +8,13 @@ struct FilePreviewView: View {
     let workspace: String
     let filename: String
 
+    // .urlPathAllowed leaves & + = ? # unencoded — they break URL parsing
+    private static let safePathCharacters: CharacterSet = {
+        var set = CharacterSet.urlPathAllowed
+        set.remove(charactersIn: "&+=?#")
+        return set
+    }()
+
     @State private var textContent: String?
     @State private var imageData: Data?
     @State private var isImage = false
@@ -174,7 +181,7 @@ struct FilePreviewView: View {
         }
 
         let sanitizedPath = components
-            .map { $0.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? $0 }
+            .map { $0.addingPercentEncoding(withAllowedCharacters: Self.safePathCharacters) ?? $0 }
             .joined(separator: "/")
 
         var queryItems = [URLQueryItem(name: "content", value: "true")]
