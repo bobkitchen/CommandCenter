@@ -193,15 +193,23 @@ struct FilePreviewView: View {
                 "/api/files/\(sanitizedPath)",
                 queryItems: queryItems
             )
-            if response.type == "image" {
-                let base64 = response.content
+            if let serverError = response.error {
+                self.error = serverError
+            } else if response.type == "image", let content = response.content {
+                let base64 = content
                     .replacingOccurrences(of: #"^data:[^;]+;base64,"#, with: "", options: .regularExpression)
                 if let data = Data(base64Encoded: base64) {
                     imageData = data
                     isImage = true
+                } else {
+                    self.error = "Could not decode image"
                 }
+            } else if let content = response.content, !content.isEmpty {
+                textContent = content
             } else {
-                textContent = response.content
+                // Server returned response but no content (binary file like MP3)
+                let fileType = response.type ?? response.mimeType ?? "binary"
+                self.error = "Cannot preview \(fileType) files.\nUse long-press → Save to Device to download."
             }
         } catch let apiError as APIError {
             switch apiError {

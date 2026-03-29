@@ -230,8 +230,10 @@ struct FileEditorView: View {
                 queryItems: queryItems
             )
 
-            if response.type == "image" {
-                let base64 = response.content
+            if let serverError = response.error {
+                loadError = serverError
+            } else if response.type == "image", let content = response.content {
+                let base64 = content
                     .replacingOccurrences(of: #"^data:[^;]+;base64,"#, with: "", options: .regularExpression)
                 if let data = Data(base64Encoded: base64) {
                     imageData = data
@@ -239,9 +241,12 @@ struct FileEditorView: View {
                 } else {
                     loadError = "Unable to decode image"
                 }
+            } else if let content = response.content, !content.isEmpty {
+                textContent = content
+                editBuffer = content
             } else {
-                textContent = response.content
-                editBuffer = response.content
+                let fileType = response.type ?? response.mimeType ?? "binary"
+                loadError = "Cannot preview \(fileType) files"
             }
         } catch {
             loadError = "Unable to load file"
