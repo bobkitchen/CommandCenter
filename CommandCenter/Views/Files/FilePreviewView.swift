@@ -13,79 +13,87 @@ struct FilePreviewView: View {
     @State private var isImage = false
     @State private var isLoading = true
     @State private var error: String?
-    @State private var tempFileURL: URL?
-    @State private var savedAlert = false
+    @State private var saveState: SaveState = .idle
     @Environment(\.dismiss) private var dismiss
+
+    enum SaveState {
+        case idle, saved, failed(String)
+    }
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                AppColors.backgroundGradient
+            VStack(spacing: 0) {
+                // Content area
+                ZStack {
+                    AppColors.backgroundGradient
 
-                if isLoading {
-                    ProgressView("Loading…")
-                        .foregroundStyle(AppColors.muted)
-                } else if let error {
-                    ErrorRetryView(message: error) {
-                        Task { await loadFile() }
-                    }
-                } else if isImage, let imageData {
-                    #if os(iOS)
-                    if let uiImage = UIImage(data: imageData) {
-                        ScrollView {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFit()
-                                .padding()
+                    if isLoading {
+                        ProgressView("Loading…")
+                            .foregroundStyle(AppColors.muted)
+                    } else if let error {
+                        ErrorRetryView(message: error) {
+                            Task { await loadFile() }
                         }
-                    }
-                    #elseif os(macOS)
-                    if let nsImage = NSImage(data: imageData) {
-                        ScrollView {
-                            Image(nsImage: nsImage)
-                                .resizable()
-                                .scaledToFit()
-                                .padding()
-                        }
-                    }
-                    #endif
-                } else if let textContent {
-                    ScrollView {
-                        VStack(alignment: .leading) {
-                            if filename.hasSuffix(".md") {
-                                MarkdownText(textContent)
-                            } else {
-                                Text(textContent)
-                                    .font(.system(.body, design: .monospaced))
-                                    .foregroundStyle(AppColors.text)
+                    } else if isImage, let imageData {
+                        #if os(iOS)
+                        if let uiImage = UIImage(data: imageData) {
+                            ScrollView {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding()
                             }
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        #elseif os(macOS)
+                        if let nsImage = NSImage(data: imageData) {
+                            ScrollView {
+                                Image(nsImage: nsImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding()
+                            }
+                        }
+                        #endif
+                    } else if let textContent {
+                        ScrollView {
+                            VStack(alignment: .leading) {
+                                if filename.hasSuffix(".md") {
+                                    MarkdownText(textContent)
+                                } else {
+                                    Text(textContent)
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundStyle(AppColors.text)
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                 }
+
+                #if os(iOS)
+                // Bottom bar with save button — NOT in toolbar
+                if !isLoading && error == nil && (textContent != nil || imageData != nil) {
+                    HStack {
+                        saveButton
+                        Spacer()
+                        Button("Done") { dismiss() }
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(AppColors.accent)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(AppColors.card)
+                }
+                #endif
             }
             .navigationTitle(filename)
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
             #endif
+            #if os(macOS)
             .toolbar {
-                #if os(iOS)
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        saveToDocuments()
-                    } label: {
-                        Image(systemName: "square.and.arrow.down")
-                    }
-                    .foregroundStyle(AppColors.accent)
-                    .disabled(textContent == nil && imageData == nil)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                        .foregroundStyle(AppColors.accent)
-                }
-                #else
                 ToolbarItem(placement: .automatic) {
                     Button {
                         saveFileAs()
@@ -99,13 +107,6 @@ struct FilePreviewView: View {
                     Button("Done") { dismiss() }
                         .foregroundStyle(AppColors.accent)
                 }
-                #endif
-            }
-            #if os(iOS)
-            .alert("Saved", isPresented: $savedAlert) {
-                Button("OK") {}
-            } message: {
-                Text("Saved to Files → On My iPhone → CommandCenter")
             }
             #endif
         }
@@ -113,11 +114,36 @@ struct FilePreviewView: View {
     }
 
     #if os(iOS)
-    private func saveToDocuments() {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    @ViewBuilder
+    private var saveButton: some View {
+        switch saveState {
+        case .idle:
+            Button {
+                performSave()
+            } label: {
+                Label("Save to Device", systemImage: "square.and.arrow.down")
+                    .font(.body.weight(.medium))
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(AppColors.accent)
+        case .saved:
+            Label("Saved", systemImage: "checkmark.circle.fill")
+                .font(.body.weight(.medium))
+                .foregroundStyle(.green)
+        case .failed(let msg):
+            Label(msg, systemImage: "xmark.circle.fill")
+                .font(.caption)
+                .foregroundStyle(.red)
+        }
+    }
+
+    private func performSave() {
+        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            saveState = .failed("No documents directory")
+            return
+        }
         let destURL = docs.appendingPathComponent(filename)
         do {
-            // Remove existing file with same name
             if FileManager.default.fileExists(atPath: destURL.path) {
                 try FileManager.default.removeItem(at: destURL)
             }
@@ -125,10 +151,13 @@ struct FilePreviewView: View {
                 try imageData.write(to: destURL)
             } else if let textContent {
                 try textContent.write(to: destURL, atomically: true, encoding: .utf8)
+            } else {
+                saveState = .failed("No content")
+                return
             }
-            savedAlert = true
+            saveState = .saved
         } catch {
-            self.error = "Failed to save: \(error.localizedDescription)"
+            saveState = .failed("Save failed")
         }
     }
     #endif
