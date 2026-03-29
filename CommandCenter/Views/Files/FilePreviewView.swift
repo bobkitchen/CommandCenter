@@ -13,7 +13,7 @@ struct FilePreviewView: View {
     @State private var isImage = false
     @State private var isLoading = true
     @State private var error: String?
-    @State private var showShareSheet = false
+    @State private var shareFileURL: URL?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -72,13 +72,12 @@ struct FilePreviewView: View {
             .toolbar {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showShareSheet = true
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
+                    if let shareFileURL {
+                        ShareLink(item: shareFileURL) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        .foregroundStyle(AppColors.accent)
                     }
-                    .foregroundStyle(AppColors.accent)
-                    .disabled(isLoading || (textContent == nil && imageData == nil))
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -102,14 +101,6 @@ struct FilePreviewView: View {
             }
         }
         .task { await loadFile() }
-        #if os(iOS)
-        .sheet(isPresented: $showShareSheet) {
-            if let fileURL = writeTempFile() {
-                ActivityView(activityItems: [fileURL])
-                    .presentationDetents([.medium, .large])
-            }
-        }
-        #endif
     }
 
     private func loadFile() async {
@@ -143,9 +134,11 @@ struct FilePreviewView: View {
                 if let data = Data(base64Encoded: base64) {
                     imageData = data
                     isImage = true
+                    writeTempFile(data: data)
                 }
             } else {
                 textContent = response.content
+                writeTempFile(text: response.content)
             }
         } catch {
             self.error = "Unable to load file"
@@ -153,38 +146,21 @@ struct FilePreviewView: View {
         isLoading = false
     }
 
-    private func writeTempFile() -> URL? {
+    private func writeTempFile(data: Data? = nil, text: String? = nil) {
         let tempDir = FileManager.default.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent(filename)
         do {
-            if isImage, let imageData {
-                try imageData.write(to: fileURL)
-            } else if let textContent {
-                try textContent.write(to: fileURL, atomically: true, encoding: .utf8)
-            } else {
-                return nil
+            if let data {
+                try data.write(to: fileURL)
+            } else if let text {
+                try text.write(to: fileURL, atomically: true, encoding: .utf8)
             }
-            return fileURL
+            shareFileURL = fileURL
         } catch {
-            return nil
+            // If temp write fails, share button simply won't appear
         }
     }
-
 }
-
-#if os(iOS)
-struct ActivityView: UIViewControllerRepresentable {
-    let activityItems: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-#endif
-
-// MARK: - macOS Save As (separate extension to keep #if clean)
 
 extension FilePreviewView {
     #if os(macOS)
@@ -200,9 +176,7 @@ extension FilePreviewView {
                 } else if let textContent {
                     try textContent.write(to: url, atomically: true, encoding: .utf8)
                 }
-            } catch {
-                // Silently fail — the panel already handles permission errors
-            }
+            } catch {}
         }
     }
     #endif
