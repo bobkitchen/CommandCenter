@@ -68,6 +68,16 @@ struct FileEditorView: View {
             }
 
             Button {
+                saveFileAs()
+            } label: {
+                Label("Save As…", systemImage: "square.and.arrow.down")
+                    .font(.system(size: 12))
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .disabled(isLoading || loadError != nil || (textContent.isEmpty && imageData == nil))
+
+            Button {
                 isEditing = false
                 Task { await loadFile() }
             } label: {
@@ -164,6 +174,27 @@ struct FileEditorView: View {
             return "photo"
         case "pdf": return "doc.richtext"
         default: return "doc"
+        }
+    }
+
+    // MARK: - Save As
+
+    private func saveFileAs() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = filename
+        panel.canCreateDirectories = true
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                if isImage, let imageData {
+                    try imageData.write(to: url)
+                } else {
+                    let content = isEditing ? editBuffer : textContent
+                    try content.write(to: url, atomically: true, encoding: .utf8)
+                }
+            } catch {
+                // Panel handles permission errors
+            }
         }
     }
 

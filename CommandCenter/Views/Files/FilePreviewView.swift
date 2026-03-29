@@ -13,6 +13,7 @@ struct FilePreviewView: View {
     @State private var isImage = false
     @State private var isLoading = true
     @State private var error: String?
+    @State private var showShareSheet = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -70,11 +71,29 @@ struct FilePreviewView: View {
             #endif
             .toolbar {
                 #if os(iOS)
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        shareFile()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .foregroundStyle(AppColors.accent)
+                    .disabled(isLoading || (textContent == nil && imageData == nil))
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .foregroundStyle(AppColors.accent)
                 }
                 #else
+                ToolbarItem(placement: .automatic) {
+                    Button {
+                        saveFileAs()
+                    } label: {
+                        Label("Save As…", systemImage: "square.and.arrow.down")
+                    }
+                    .foregroundStyle(AppColors.accent)
+                    .disabled(isLoading || (textContent == nil && imageData == nil))
+                }
                 ToolbarItem(placement: .automatic) {
                     Button("Done") { dismiss() }
                         .foregroundStyle(AppColors.accent)
@@ -125,4 +144,56 @@ struct FilePreviewView: View {
         }
         isLoading = false
     }
+
+    private func writeTempFile() -> URL? {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent(filename)
+        do {
+            if isImage, let imageData {
+                try imageData.write(to: fileURL)
+            } else if let textContent {
+                try textContent.write(to: fileURL, atomically: true, encoding: .utf8)
+            } else {
+                return nil
+            }
+            return fileURL
+        } catch {
+            return nil
+        }
+    }
+
+    #if os(iOS)
+    private func shareFile() {
+        guard let fileURL = writeTempFile() else { return }
+        let activityVC = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootVC = windowScene.windows.first?.rootViewController else { return }
+        // Find the topmost presented controller
+        var topVC = rootVC
+        while let presented = topVC.presentedViewController { topVC = presented }
+        activityVC.popoverPresentationController?.sourceView = topVC.view
+        activityVC.popoverPresentationController?.sourceRect = CGRect(x: topVC.view.bounds.midX, y: 60, width: 0, height: 0)
+        topVC.present(activityVC, animated: true)
+    }
+    #endif
+
+    #if os(macOS)
+    private func saveFileAs() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = filename
+        panel.canCreateDirectories = true
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                if isImage, let imageData {
+                    try imageData.write(to: url)
+                } else if let textContent {
+                    try textContent.write(to: url, atomically: true, encoding: .utf8)
+                }
+            } catch {
+                // Silently fail — the panel already handles permission errors
+            }
+        }
+    }
+    #endif
 }
