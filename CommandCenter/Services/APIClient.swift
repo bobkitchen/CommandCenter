@@ -168,7 +168,18 @@ final class APIClient {
         var request = URLRequest(url: url)
         request.timeoutInterval = 300
 
-        let (asyncBytes, response) = try await session.bytes(for: request)
+        // Use URLSessionDownloadTask with delegate for native-speed downloads.
+        // The previous asyncBytes approach iterated byte-by-byte with an async
+        // suspension per byte — catastrophically slow for large files.
+        let delegate = DownloadDelegate(progress: progress)
+        let downloadSession = URLSession(
+            configuration: session.configuration,
+            delegate: delegate,
+            delegateQueue: nil
+        )
+        defer { downloadSession.finishTasksAndInvalidate() }
+
+        let (tempURL, response) = try await downloadSession.download(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
@@ -178,35 +189,39 @@ final class APIClient {
             throw APIError.httpError(httpResponse.statusCode)
         }
 
-        let expectedLength = httpResponse.expectedContentLength
-
-        let fileHandle = try FileHandle(forWritingTo: {
-            // Create/truncate the file
-            FileManager.default.createFile(atPath: destURL.path, contents: nil)
-            return destURL
-        }())
-        defer { try? fileHandle.close() }
-
-        var bytesWritten: Int64 = 0
-        var buffer = Data()
-        let flushSize = 65_536 // 64KB chunks
-
-        for try await byte in asyncBytes {
-            buffer.append(byte)
-            if buffer.count >= flushSize {
-                fileHandle.write(buffer)
-                bytesWritten += Int64(buffer.count)
-                buffer.removeAll(keepingCapacity: true)
-                progress(bytesWritten, expectedLength)
-            }
+        // Move the completed temp file to the destination
+        if FileManager.default.fileExists(atPath: destURL.path) {
+            try FileManager.default.removeItem(at: destURL)
         }
+        try FileManager.default.moveItem(at: tempURL, to: destURL)
+    }
+}
 
-        // Flush remaining
-        if !buffer.isEmpty {
-            fileHandle.write(buffer)
-            bytesWritten += Int64(buffer.count)
-            progress(bytesWritten, expectedLength)
-        }
+// MARK: - Download delegate for progress tracking
+
+private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, Sendable {
+    let progress: @Sendable (Int64, Int64) -> Void
+
+    init(progress: @escaping @Sendable (Int64, Int64) -> Void) {
+        self.progress = progress
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didWriteData bytesWritten: Int64,
+        totalBytesWritten: Int64,
+        totalBytesExpectedToWrite: Int64
+    ) {
+        self.progress(totalBytesWritten, totalBytesExpectedToWrite)
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didFinishDownloadingTo location: URL
+    ) {
+        // Required by protocol — the async download(for:) call handles the file
     }
 }
 
