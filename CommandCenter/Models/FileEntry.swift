@@ -11,7 +11,7 @@ struct FileEntry: Codable, Identifiable, Hashable {
     var isDirectory: Bool { type == "directory" || type == "dir" }
 
     var formattedSize: String {
-        guard let size else { return "" }
+        guard !isDirectory, let size else { return "" }
         if size < 1024 { return "\(size) B" }
         if size < 1024 * 1024 { return "\(size / 1024) KB" }
         return String(format: "%.1f MB", Double(size) / (1024 * 1024))
