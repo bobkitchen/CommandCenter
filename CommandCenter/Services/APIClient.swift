@@ -148,6 +148,66 @@ final class APIClient {
     func fullURL(for path: String) -> URL? {
         URL(string: "\(baseURL)\(path)")
     }
+
+    // MARK: - Download with progress
+
+    func download(
+        _ path: String,
+        queryItems: [URLQueryItem]? = nil,
+        to destURL: URL,
+        progress: @escaping @Sendable (Int64, Int64) -> Void
+    ) async throws {
+        guard var components = URLComponents(string: "\(baseURL)\(path)") else {
+            throw APIError.invalidURL
+        }
+        if let queryItems, !queryItems.isEmpty {
+            components.queryItems = queryItems
+        }
+        guard let url = components.url else { throw APIError.invalidURL }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 300
+
+        let (asyncBytes, response) = try await session.bytes(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        if httpResponse.statusCode == 401 { throw APIError.unauthorized }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.httpError(httpResponse.statusCode)
+        }
+
+        let expectedLength = httpResponse.expectedContentLength
+
+        let fileHandle = try FileHandle(forWritingTo: {
+            // Create/truncate the file
+            FileManager.default.createFile(atPath: destURL.path, contents: nil)
+            return destURL
+        }())
+        defer { try? fileHandle.close() }
+
+        var bytesWritten: Int64 = 0
+        var buffer = Data()
+        let flushSize = 65_536 // 64KB chunks
+
+        for try await byte in asyncBytes {
+            buffer.append(byte)
+            if buffer.count >= flushSize {
+                fileHandle.write(buffer)
+                bytesWritten += Int64(buffer.count)
+                buffer.removeAll(keepingCapacity: true)
+                progress(bytesWritten, expectedLength)
+            }
+        }
+
+        // Flush remaining
+        if !buffer.isEmpty {
+            fileHandle.write(buffer)
+            bytesWritten += Int64(buffer.count)
+            progress(bytesWritten, expectedLength)
+        }
+    }
 }
 
 enum APIError: LocalizedError {

@@ -9,6 +9,14 @@ struct FileBrowserView: View {
     @State private var searchText = ""
     @State private var loadError: String?
     @State private var toastMessage: String?
+    @State private var downloadState: DownloadState = .idle
+
+    enum DownloadState: Equatable {
+        case idle
+        case downloading(filename: String, bytesWritten: Int64, totalBytes: Int64)
+        case completed(filename: String, fileSize: Int64)
+        case failed(String)
+    }
 
     private let workspaces = ["workspace", "workspace-sentinel", "workspace-mirror", "workspace-scout"]
 
@@ -140,20 +148,15 @@ struct FileBrowserView: View {
                     }
                 }
 
-                // Toast overlay
-                if let toast = toastMessage {
+                // Download overlay
+                if downloadState != .idle {
                     VStack {
                         Spacer()
-                        Text(toast)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.white)
+                        downloadOverlay
                             .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(.ultraThinMaterial, in: Capsule())
                             .padding(.bottom, 30)
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .allowsHitTesting(false)
                 }
             }
             .navigationTitle("Files")
@@ -172,6 +175,88 @@ struct FileBrowserView: View {
         .task { await loadDirectory() }
     }
 
+    // MARK: - Download overlay
+
+    @ViewBuilder
+    private var downloadOverlay: some View {
+        VStack(spacing: 10) {
+            switch downloadState {
+            case .idle:
+                EmptyView()
+
+            case .downloading(let filename, let bytesWritten, let totalBytes):
+                HStack(spacing: 12) {
+                    ProgressView()
+                        .tint(.white)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(filename)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        if totalBytes > 0 {
+                            ProgressView(value: Double(bytesWritten), total: Double(totalBytes))
+                                .tint(AppColors.accent)
+                            Text("\(formatBytes(bytesWritten)) / \(formatBytes(totalBytes))")
+                                .font(.caption2)
+                                .foregroundStyle(.white.opacity(0.7))
+                        } else {
+                            Text("Downloading… \(formatBytes(bytesWritten))")
+                                .font(.caption2)
+                                .foregroundStyle(.white.opacity(0.7))
+                        }
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+
+            case .completed(let filename, let fileSize):
+                VStack(spacing: 6) {
+                    Label("Downloaded", systemImage: "checkmark.circle.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.green)
+                    Text("\(filename) (\(formatBytes(fileSize)))")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.8))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Text("Files → On My iPhone → CommandCenter")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.5))
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .onTapGesture {
+                    withAnimation { downloadState = .idle }
+                }
+
+            case .failed(let message):
+                VStack(spacing: 4) {
+                    Label("Download Failed", systemImage: "xmark.circle.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.red)
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .onTapGesture {
+                    withAnimation { downloadState = .idle }
+                }
+            }
+        }
+    }
+
+    private func formatBytes(_ bytes: Int64) -> String {
+        if bytes < 1024 { return "\(bytes) B" }
+        if bytes < 1024 * 1024 { return String(format: "%.0f KB", Double(bytes) / 1024) }
+        return String(format: "%.1f MB", Double(bytes) / (1024 * 1024))
+    }
+
     // MARK: - Download file to Documents
 
     #if os(iOS)
@@ -188,85 +273,61 @@ struct FileBrowserView: View {
         guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
         let destURL = docs.appendingPathComponent(entry.name)
 
+        withAnimation { downloadState = .downloading(filename: entry.name, bytesWritten: 0, totalBytes: 0) }
+
         do {
             if FileManager.default.fileExists(atPath: destURL.path) {
                 try FileManager.default.removeItem(at: destURL)
             }
 
-            // First try the JSON content API (works for text and images)
-            var queryItems = [URLQueryItem(name: "content", value: "true")]
+            // Use ?download=true for raw binary download with progress
+            var queryItems = [URLQueryItem(name: "download", value: "true")]
             if workspace != "workspace" {
                 queryItems.append(URLQueryItem(name: "workspace", value: workspace))
             }
 
-            let response: FileContentResponse = try await APIClient.shared.get(
+            try await APIClient.shared.download(
                 "/api/files/\(sanitizedPath)",
-                queryItems: queryItems
-            )
-
-            if let content = response.content, !content.isEmpty {
-                if response.type == "image" {
-                    let base64 = content
-                        .replacingOccurrences(of: #"^data:[^;]+;base64,"#, with: "", options: .regularExpression)
-                    if let data = Data(base64Encoded: base64) {
-                        try data.write(to: destURL)
-                    } else {
-                        showToast("Failed to decode image")
-                        return
-                    }
-                } else {
-                    try content.write(to: destURL, atomically: true, encoding: .utf8)
+                queryItems: queryItems,
+                to: destURL
+            ) { bytesWritten, totalBytes in
+                Task { @MainActor in
+                    downloadState = .downloading(
+                        filename: entry.name,
+                        bytesWritten: bytesWritten,
+                        totalBytes: totalBytes
+                    )
                 }
-                showToast("Saved to Files")
-            } else {
-                // No inline content — use ?download=true for raw bytes
-                try await downloadRawFile(sanitizedPath: sanitizedPath, destURL: destURL)
             }
+
+            // Verify the file was actually saved
+            let attrs = try FileManager.default.attributesOfItem(atPath: destURL.path)
+            let fileSize = (attrs[.size] as? Int64) ?? 0
+
+            if fileSize < 100 {
+                // Probably a JSON error response, not a real file
+                if let text = try? String(contentsOf: destURL, encoding: .utf8),
+                   text.trimmingCharacters(in: .whitespaces).hasPrefix("{") {
+                    try? FileManager.default.removeItem(at: destURL)
+                    withAnimation { downloadState = .failed("Server returned error instead of file") }
+                    autoDismissDownload()
+                    return
+                }
+            }
+
+            withAnimation { downloadState = .completed(filename: entry.name, fileSize: fileSize) }
+            autoDismissDownload(delay: 5)
+
         } catch {
-            // JSON decode or content issue — try raw download as fallback
-            do {
-                try await downloadRawFile(sanitizedPath: sanitizedPath, destURL: destURL)
-            } catch {
-                showToast("Download failed")
-            }
+            withAnimation { downloadState = .failed(error.localizedDescription) }
+            autoDismissDownload()
         }
     }
 
-    private func downloadRawFile(sanitizedPath: String, destURL: URL) async throws {
-        var queryItems = [URLQueryItem(name: "download", value: "true")]
-        if workspace != "workspace" {
-            queryItems.append(URLQueryItem(name: "workspace", value: workspace))
-        }
-
-        let data = try await APIClient.shared.getData(
-            "/api/files/\(sanitizedPath)",
-            queryItems: queryItems
-        )
-
-        guard data.count > 100 else {
-            // Tiny response is likely a JSON error, not a real file
-            if let text = String(data: data, encoding: .utf8) {
-                showToast("Server: \(text)")
-            } else {
-                showToast("Empty file")
-            }
-            return
-        }
-
-        if FileManager.default.fileExists(atPath: destURL.path) {
-            try FileManager.default.removeItem(at: destURL)
-        }
-
-        try data.write(to: destURL)
-        showToast("Saved to Files")
-    }
-
-    @MainActor
-    private func showToast(_ message: String) {
-        withAnimation { toastMessage = message }
+    private func autoDismissDownload(delay: Int = 3) {
         Task {
-            try? await Task.sleep(for: .seconds(2))
-            withAnimation { toastMessage = nil }
+            try? await Task.sleep(for: .seconds(delay))
+            withAnimation { downloadState = .idle }
         }
     }
     #endif
