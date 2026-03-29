@@ -206,10 +206,14 @@ struct FilePreviewView: View {
                 }
             } else if let content = response.content, !content.isEmpty {
                 textContent = content
-            } else {
-                // Server returned response but no content (binary file like MP3)
-                let fileType = response.type ?? response.mimeType ?? "binary"
+            } else if response.downloadUrl != nil || response.path != nil {
+                // Binary file with download URL available
+                let fileType = response.mimeType ?? response.type ?? "binary"
                 self.error = "Cannot preview \(fileType) files.\nUse long-press → Save to Device to download."
+            } else {
+                // No content and no download path
+                let fileType = response.type ?? "this"
+                self.error = "Cannot preview \(fileType) files."
             }
         } catch let apiError as APIError {
             switch apiError {
