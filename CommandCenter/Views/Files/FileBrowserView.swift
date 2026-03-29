@@ -185,23 +185,24 @@ struct FileBrowserView: View {
             .map { $0.addingPercentEncoding(withAllowedCharacters: Self.safePathCharacters) ?? $0 }
             .joined(separator: "/")
 
-        var queryItems = [URLQueryItem(name: "content", value: "true")]
-        if workspace != "workspace" {
-            queryItems.append(URLQueryItem(name: "workspace", value: workspace))
-        }
+        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        let destURL = docs.appendingPathComponent(entry.name)
 
         do {
+            if FileManager.default.fileExists(atPath: destURL.path) {
+                try FileManager.default.removeItem(at: destURL)
+            }
+
+            // First try the JSON content API (works for text and images)
+            var queryItems = [URLQueryItem(name: "content", value: "true")]
+            if workspace != "workspace" {
+                queryItems.append(URLQueryItem(name: "workspace", value: workspace))
+            }
+
             let response: FileContentResponse = try await APIClient.shared.get(
                 "/api/files/\(sanitizedPath)",
                 queryItems: queryItems
             )
-
-            guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-            let destURL = docs.appendingPathComponent(entry.name)
-
-            if FileManager.default.fileExists(atPath: destURL.path) {
-                try FileManager.default.removeItem(at: destURL)
-            }
 
             if let content = response.content, !content.isEmpty {
                 if response.type == "image" {
@@ -209,19 +210,54 @@ struct FileBrowserView: View {
                         .replacingOccurrences(of: #"^data:[^;]+;base64,"#, with: "", options: .regularExpression)
                     if let data = Data(base64Encoded: base64) {
                         try data.write(to: destURL)
+                    } else {
+                        showToast("Failed to decode image")
+                        return
                     }
                 } else {
                     try content.write(to: destURL, atomically: true, encoding: .utf8)
                 }
+                showToast("Saved to Files")
             } else {
-                showToast("Cannot download this file type")
-                return
+                // No inline content — try raw data download
+                try await downloadRawFile(sanitizedPath: sanitizedPath, destURL: destURL)
             }
-
-            showToast("Saved to Files")
         } catch {
-            showToast("Download failed")
+            // JSON decode failed — try raw data download as fallback
+            do {
+                try await downloadRawFile(sanitizedPath: sanitizedPath, destURL: destURL)
+            } catch {
+                showToast("Download failed")
+            }
         }
+    }
+
+    private func downloadRawFile(sanitizedPath: String, destURL: URL) async throws {
+        var queryItems = [URLQueryItem(name: "raw", value: "true")]
+        if workspace != "workspace" {
+            queryItems.append(URLQueryItem(name: "workspace", value: workspace))
+        }
+
+        let data = try await APIClient.shared.getData(
+            "/api/files/\(sanitizedPath)",
+            queryItems: queryItems
+        )
+
+        guard !data.isEmpty else {
+            showToast("Empty file")
+            return
+        }
+
+        // Check if the response is actually a JSON error instead of raw file data
+        if data.count < 500, let text = String(data: data, encoding: .utf8),
+           text.trimmingCharacters(in: .whitespaces).hasPrefix("{") {
+            // Server returned JSON, not raw file — save as text
+            try data.write(to: destURL)
+        } else {
+            try data.write(to: destURL)
+        }
+
+        showToast("Saved to Files")
     }
 
     @MainActor

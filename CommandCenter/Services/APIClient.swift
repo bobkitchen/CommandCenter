@@ -120,14 +120,27 @@ final class APIClient {
         }
     }
 
-    // MARK: - Raw data fetch (for images etc.)
+    // MARK: - Raw data fetch (for images, binary downloads, etc.)
 
-    func getData(_ path: String) async throws -> Data {
-        guard let url = URL(string: "\(baseURL)\(path)") else { throw APIError.invalidURL }
-        let (data, response) = try await session.data(for: URLRequest(url: url))
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
+    func getData(_ path: String, queryItems: [URLQueryItem]? = nil) async throws -> Data {
+        guard var components = URLComponents(string: "\(baseURL)\(path)") else {
+            throw APIError.invalidURL
+        }
+        if let queryItems, !queryItems.isEmpty {
+            components.queryItems = queryItems
+        }
+        guard let url = components.url else { throw APIError.invalidURL }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 60
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
+        }
+        if httpResponse.statusCode == 401 {
+            throw APIError.unauthorized
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.httpError(httpResponse.statusCode)
         }
         return data
     }
