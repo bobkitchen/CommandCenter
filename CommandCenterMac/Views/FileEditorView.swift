@@ -209,7 +209,7 @@ struct FileEditorView: View {
         isEditing = false
 
         let components = path.components(separatedBy: "/")
-        guard components.allSatisfy({ !$0.contains("..") }) else {
+        guard components.allSatisfy({ $0 != ".." }) else {
             loadError = "Invalid file path"
             isLoading = false
             return

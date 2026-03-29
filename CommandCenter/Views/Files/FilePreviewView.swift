@@ -73,7 +73,7 @@ struct FilePreviewView: View {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        shareFile()
+                        showShareSheet = true
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
@@ -102,6 +102,14 @@ struct FilePreviewView: View {
             }
         }
         .task { await loadFile() }
+        #if os(iOS)
+        .sheet(isPresented: $showShareSheet) {
+            if let fileURL = writeTempFile() {
+                ActivityView(activityItems: [fileURL])
+                    .presentationDetents([.medium, .large])
+            }
+        }
+        #endif
     }
 
     private func loadFile() async {
@@ -110,7 +118,7 @@ struct FilePreviewView: View {
 
         // Sanitize path — reject traversal attempts
         let components = path.components(separatedBy: "/")
-        guard components.allSatisfy({ !$0.contains("..") }) else {
+        guard components.allSatisfy({ $0 != ".." }) else {
             error = "Invalid file path"
             isLoading = false
             return
@@ -162,23 +170,25 @@ struct FilePreviewView: View {
         }
     }
 
-    #if os(iOS)
-    private func shareFile() {
-        guard let fileURL = writeTempFile() else { return }
-        let activityVC = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootVC = windowScene.windows.first?.rootViewController else { return }
-        // Find the topmost presented controller
-        var topVC = rootVC
-        while let presented = topVC.presentedViewController { topVC = presented }
-        activityVC.popoverPresentationController?.sourceView = topVC.view
-        activityVC.popoverPresentationController?.sourceRect = CGRect(x: topVC.view.bounds.midX, y: 60, width: 0, height: 0)
-        topVC.present(activityVC, animated: true)
-    }
-    #endif
+}
 
+#if os(iOS)
+struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+#endif
+
+// MARK: - macOS Save As (separate extension to keep #if clean)
+
+extension FilePreviewView {
     #if os(macOS)
-    private func saveFileAs() {
+    func saveFileAs() {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = filename
         panel.canCreateDirectories = true

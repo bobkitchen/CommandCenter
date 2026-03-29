@@ -142,7 +142,7 @@ struct FileBrowserView: View {
         loadError = nil
 
         // Sanitize path components
-        let sanitized = currentPath.filter { !$0.contains("..") && !$0.contains("/") }
+        let sanitized = currentPath.filter { $0 != ".." && !$0.contains("/") }
         if sanitized.count != currentPath.count {
             currentPath = sanitized
         }
