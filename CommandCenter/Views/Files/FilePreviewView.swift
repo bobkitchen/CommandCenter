@@ -14,7 +14,7 @@ struct FilePreviewView: View {
     @State private var isLoading = true
     @State private var error: String?
     @State private var tempFileURL: URL?
-    @State private var showShare = false
+    @State private var savedAlert = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -64,15 +64,6 @@ struct FilePreviewView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-
-                #if os(iOS)
-                // Invisible VC embedded in the sheet's own hierarchy
-                if let tempFileURL {
-                    SharePresenter(fileURL: tempFileURL, isPresented: $showShare)
-                        .frame(width: 0, height: 0)
-                        .allowsHitTesting(false)
-                }
-                #endif
             }
             .navigationTitle(filename)
             #if os(iOS)
@@ -83,12 +74,12 @@ struct FilePreviewView: View {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        showShare = true
+                        saveToDocuments()
                     } label: {
-                        Image(systemName: "square.and.arrow.up")
+                        Image(systemName: "square.and.arrow.down")
                     }
                     .foregroundStyle(AppColors.accent)
-                    .disabled(tempFileURL == nil)
+                    .disabled(textContent == nil && imageData == nil)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -110,9 +101,37 @@ struct FilePreviewView: View {
                 }
                 #endif
             }
+            #if os(iOS)
+            .alert("Saved", isPresented: $savedAlert) {
+                Button("OK") {}
+            } message: {
+                Text("Saved to Files → On My iPhone → CommandCenter")
+            }
+            #endif
         }
         .task { await loadFile() }
     }
+
+    #if os(iOS)
+    private func saveToDocuments() {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let destURL = docs.appendingPathComponent(filename)
+        do {
+            // Remove existing file with same name
+            if FileManager.default.fileExists(atPath: destURL.path) {
+                try FileManager.default.removeItem(at: destURL)
+            }
+            if isImage, let imageData {
+                try imageData.write(to: destURL)
+            } else if let textContent {
+                try textContent.write(to: destURL, atomically: true, encoding: .utf8)
+            }
+            savedAlert = true
+        } catch {
+            self.error = "Failed to save: \(error.localizedDescription)"
+        }
+    }
+    #endif
 
     private func loadFile() async {
         isLoading = true
@@ -144,61 +163,16 @@ struct FilePreviewView: View {
                 if let data = Data(base64Encoded: base64) {
                     imageData = data
                     isImage = true
-                    writeTempFile(data: data)
                 }
             } else {
                 textContent = response.content
-                writeTempFile(text: response.content)
             }
         } catch {
             self.error = "Unable to load file"
         }
         isLoading = false
     }
-
-    private func writeTempFile(data: Data? = nil, text: String? = nil) {
-        let tempDir = FileManager.default.temporaryDirectory
-        let fileURL = tempDir.appendingPathComponent(filename)
-        do {
-            if let data {
-                try data.write(to: fileURL)
-            } else if let text {
-                try text.write(to: fileURL, atomically: true, encoding: .utf8)
-            }
-            tempFileURL = fileURL
-        } catch {}
-    }
 }
-
-// MARK: - iOS Share Presenter (UIKit-based, works inside sheets)
-
-#if os(iOS)
-struct SharePresenter: UIViewControllerRepresentable {
-    let fileURL: URL
-    @Binding var isPresented: Bool
-
-    func makeUIViewController(context: Context) -> UIViewController {
-        UIViewController()
-    }
-
-    func updateUIViewController(_ vc: UIViewController, context: Context) {
-        if isPresented, vc.presentedViewController == nil {
-            let activityVC = UIActivityViewController(
-                activityItems: [fileURL],
-                applicationActivities: nil
-            )
-            activityVC.popoverPresentationController?.sourceView = vc.view
-            activityVC.popoverPresentationController?.sourceRect = .zero
-            activityVC.completionWithItemsHandler = { _, _, _, _ in
-                isPresented = false
-            }
-            vc.present(activityVC, animated: true)
-        } else if !isPresented, vc.presentedViewController != nil {
-            vc.dismiss(animated: true)
-        }
-    }
-}
-#endif
 
 // MARK: - macOS Save As
 
