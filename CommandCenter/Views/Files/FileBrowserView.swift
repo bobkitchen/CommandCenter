@@ -233,7 +233,7 @@ struct FileBrowserView: View {
     }
 
     private func downloadRawFile(sanitizedPath: String, destURL: URL) async throws {
-        var queryItems = [URLQueryItem(name: "raw", value: "true")]
+        var queryItems = [URLQueryItem(name: "download", value: "true")]
         if workspace != "workspace" {
             queryItems.append(URLQueryItem(name: "workspace", value: workspace))
         }
@@ -248,15 +248,15 @@ struct FileBrowserView: View {
             return
         }
 
-        // Check if the response is actually a JSON error instead of raw file data
-        if data.count < 500, let text = String(data: data, encoding: .utf8),
+        // Check if the server returned JSON instead of raw file data
+        // (means ?download=true isn't supported yet)
+        if data.count < 1000, let text = String(data: data, encoding: .utf8),
            text.trimmingCharacters(in: .whitespaces).hasPrefix("{") {
-            // Server returned JSON, not raw file — save as text
-            try data.write(to: destURL)
-        } else {
-            try data.write(to: destURL)
+            showToast("Server doesn't support binary download yet")
+            return
         }
 
+        try data.write(to: destURL)
         showToast("Saved to Files")
     }
 
