@@ -203,8 +203,19 @@ struct FilePreviewView: View {
             } else {
                 textContent = response.content
             }
+        } catch let apiError as APIError {
+            switch apiError {
+            case .unauthorized:
+                self.error = "Not authorized (401)"
+            case .httpError(let code):
+                self.error = "Server error (\(code))"
+            case .invalidURL:
+                self.error = "Invalid URL for: \(sanitizedPath)"
+            case .invalidResponse:
+                self.error = "Invalid response"
+            }
         } catch {
-            self.error = "Unable to load file"
+            self.error = "Load failed: \(error.localizedDescription)"
         }
         isLoading = false
     }

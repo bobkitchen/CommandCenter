@@ -13,6 +13,8 @@ settings:
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: 1
     INFOPLIST_FILE: CommandCenter/Info.plist
+    DEVELOPMENT_TEAM: ZW6EQ2JWKC
+    CODE_SIGN_STYLE: Automatic
 
 schemes:
   CommandCenter:
@@ -41,6 +43,8 @@ targets:
       base:
         INFOPLIST_FILE: CommandCenter/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.bobkitchen.commandcenter
+        DEVELOPMENT_TEAM: ZW6EQ2JWKC
+        CODE_SIGN_STYLE: Automatic
         INFOPLIST_KEY_UILaunchScreen_Generation: true
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait"
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
@@ -71,6 +75,8 @@ targets:
       base:
         INFOPLIST_FILE: CommandCenterMac/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.bobkitchen.commandcenter.mac
+        DEVELOPMENT_TEAM: ZW6EQ2JWKC
+        CODE_SIGN_STYLE: Automatic
         SWIFT_STRICT_CONCURRENCY: complete
         GENERATE_INFOPLIST_FILE: true
         MACOSX_DEPLOYMENT_TARGET: "15.0"
@@ -94,6 +100,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bobkitchen.commandcenter.widget
+        DEVELOPMENT_TEAM: ZW6EQ2JWKC
+        CODE_SIGN_STYLE: Automatic
         INFOPLIST_FILE: CommandCenterWidget/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: "Command Center Widget"
         SWIFT_STRICT_CONCURRENCY: complete
