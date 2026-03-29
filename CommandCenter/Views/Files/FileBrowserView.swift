@@ -218,42 +218,31 @@ struct FileBrowserView: View {
                     try content.write(to: destURL, atomically: true, encoding: .utf8)
                 }
                 showToast("Saved to Files")
+            } else if let downloadUrl = response.downloadUrl {
+                // Server provided a /api/media/ URL for raw download
+                try await downloadFromMediaEndpoint(downloadUrl, destURL: destURL)
+            } else if let serverPath = response.path {
+                // Server provided full filesystem path — construct /api/media/ URL
+                let mediaPath = serverPath.addingPercentEncoding(withAllowedCharacters: Self.safePathCharacters) ?? serverPath
+                try await downloadFromMediaEndpoint("/api/media/\(mediaPath)", destURL: destURL)
             } else {
-                // No inline content — try raw data download
-                try await downloadRawFile(sanitizedPath: sanitizedPath, destURL: destURL)
+                showToast("Cannot download this file type")
             }
         } catch {
-            // JSON decode failed — try raw data download as fallback
-            do {
-                try await downloadRawFile(sanitizedPath: sanitizedPath, destURL: destURL)
-            } catch {
-                showToast("Download failed")
-            }
+            showToast("Download failed")
         }
     }
 
-    private func downloadRawFile(sanitizedPath: String, destURL: URL) async throws {
-        var queryItems = [URLQueryItem(name: "download", value: "true")]
-        if workspace != "workspace" {
-            queryItems.append(URLQueryItem(name: "workspace", value: workspace))
-        }
-
-        let data = try await APIClient.shared.getData(
-            "/api/files/\(sanitizedPath)",
-            queryItems: queryItems
-        )
+    private func downloadFromMediaEndpoint(_ mediaPath: String, destURL: URL) async throws {
+        let data = try await APIClient.shared.getData(mediaPath)
 
         guard !data.isEmpty else {
             showToast("Empty file")
             return
         }
 
-        // Check if the server returned JSON instead of raw file data
-        // (means ?download=true isn't supported yet)
-        if data.count < 1000, let text = String(data: data, encoding: .utf8),
-           text.trimmingCharacters(in: .whitespaces).hasPrefix("{") {
-            showToast("Server doesn't support binary download yet")
-            return
+        if FileManager.default.fileExists(atPath: destURL.path) {
+            try FileManager.default.removeItem(at: destURL)
         }
 
         try data.write(to: destURL)

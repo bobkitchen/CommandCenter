@@ -406,42 +406,50 @@ The iOS app will detect the WebSocket automatically on next launch — the toolb
 
 ---
 
-## Raw File Download Endpoint (NEW)
+## Binary File Downloads (NEW)
 
-The iOS app needs to download binary files (MP3, PDF, etc.) that can't be returned as JSON text/base64. The current `?content=true` endpoint only works for text and images.
+The iOS app needs to download binary files (MP3, PDF, etc.) that can't be returned as JSON text/base64. The `/api/media/[...path]` endpoint already serves raw files perfectly — we just need the `/api/files/` response to include the download path so the iOS app knows where to fetch from.
 
-### Required: `?download=true` parameter on `/api/files/{path}`
+### Required: Add `downloadUrl` and `path` fields to `/api/files/{path}?content=true` response
 
-```
-GET /api/files/{path}?download=true[&workspace=workspace-name]
-```
+When the file type is binary (not text or image), include the download info in the JSON response:
 
-**Behavior:**
-- Read the file from disk at the resolved path
-- Stream the raw bytes directly as the HTTP response body
-- Set `Content-Type` to the file's MIME type (use `mime-types` npm package or similar)
-- Set `Content-Disposition: attachment; filename="original-filename.mp3"`
-- Set `Content-Length` to the file size in bytes
-- Do NOT wrap in JSON — return the raw file data
-
-**Example response headers:**
-```
-HTTP/1.1 200 OK
-Content-Type: audio/mpeg
-Content-Disposition: attachment; filename="Fred again.. & Thomas Bangalter (USB002, Original Mix).mp3"
-Content-Length: 8432156
-```
-
-**Implementation (Express example):**
-```javascript
-// In your /api/files route handler, before the existing content=true logic:
-if (req.query.download === 'true') {
-    const filePath = resolveFilePath(req.params[0], req.query.workspace);
-    if (!fs.existsSync(filePath)) {
-        return res.status(404).json({ error: 'File not found' });
-    }
-    return res.download(filePath); // Express handles Content-Type, Content-Disposition, streaming
+```json
+{
+  "type": "binary",
+  "content": null,
+  "filename": "Fred again.. & Thomas Bangalter (USB002, Original Mix).mp3",
+  "size": 8432156,
+  "mimeType": "audio/mpeg",
+  "downloadUrl": "/api/media/home/bob/.openclaw/workspace/music/Fred again.. & Thomas Bangalter (USB002, Original Mix).mp3",
+  "path": "/home/bob/.openclaw/workspace/music/Fred again.. & Thomas Bangalter (USB002, Original Mix).mp3"
 }
 ```
 
-**That's it** — `res.download()` handles everything. The iOS app already sends `?download=true` and saves the raw response bytes directly to the device's Files app.
+**Implementation** — in the `/api/files/[[...path]]` route handler, when the file isn't text or image:
+
+```javascript
+// After resolving the full filesystem path:
+const fullPath = resolveFilePath(pathSegments, workspace);
+const ext = path.extname(fullPath).toLowerCase();
+const binaryTypes = ['.mp3', '.mp4', '.pdf', '.zip', '.gpx', '.wav', '.flac', '.m4a'];
+
+if (binaryTypes.includes(ext)) {
+    return Response.json({
+        type: 'binary',
+        content: null,
+        filename: path.basename(fullPath),
+        size: fs.statSync(fullPath).size,
+        mimeType: getMimeType(ext),
+        downloadUrl: `/api/media/${fullPath}`,
+        path: fullPath
+    });
+}
+```
+
+**The iOS app then:**
+1. Sees `downloadUrl` in the response
+2. Fetches `GET /api/media/{path}` (which is already public and returns raw bytes)
+3. Saves the raw data directly to the device's Files app
+
+**No new endpoints needed** — just two extra fields in the existing `/api/files/` JSON response.
