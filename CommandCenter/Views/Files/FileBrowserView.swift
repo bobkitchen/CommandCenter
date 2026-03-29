@@ -218,26 +218,38 @@ struct FileBrowserView: View {
                     try content.write(to: destURL, atomically: true, encoding: .utf8)
                 }
                 showToast("Saved to Files")
-            } else if let downloadUrl = response.downloadUrl {
-                // Server provided a /api/media/ URL for raw download
-                try await downloadFromMediaEndpoint(downloadUrl, destURL: destURL)
-            } else if let serverPath = response.path {
-                // Server provided full filesystem path — construct /api/media/ URL
-                let mediaPath = serverPath.addingPercentEncoding(withAllowedCharacters: Self.safePathCharacters) ?? serverPath
-                try await downloadFromMediaEndpoint("/api/media/\(mediaPath)", destURL: destURL)
             } else {
-                showToast("Cannot download this file type")
+                // No inline content — use ?download=true for raw bytes
+                try await downloadRawFile(sanitizedPath: sanitizedPath, destURL: destURL)
             }
         } catch {
-            showToast("Download failed")
+            // JSON decode or content issue — try raw download as fallback
+            do {
+                try await downloadRawFile(sanitizedPath: sanitizedPath, destURL: destURL)
+            } catch {
+                showToast("Download failed")
+            }
         }
     }
 
-    private func downloadFromMediaEndpoint(_ mediaPath: String, destURL: URL) async throws {
-        let data = try await APIClient.shared.getData(mediaPath)
+    private func downloadRawFile(sanitizedPath: String, destURL: URL) async throws {
+        var queryItems = [URLQueryItem(name: "download", value: "true")]
+        if workspace != "workspace" {
+            queryItems.append(URLQueryItem(name: "workspace", value: workspace))
+        }
 
-        guard !data.isEmpty else {
-            showToast("Empty file")
+        let data = try await APIClient.shared.getData(
+            "/api/files/\(sanitizedPath)",
+            queryItems: queryItems
+        )
+
+        guard data.count > 100 else {
+            // Tiny response is likely a JSON error, not a real file
+            if let text = String(data: data, encoding: .utf8) {
+                showToast("Server: \(text)")
+            } else {
+                showToast("Empty file")
+            }
             return
         }
 
