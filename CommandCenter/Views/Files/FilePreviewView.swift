@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 #if os(macOS)
 import AppKit
 #endif
@@ -13,7 +14,8 @@ struct FilePreviewView: View {
     @State private var isImage = false
     @State private var isLoading = true
     @State private var error: String?
-    @State private var shareFileURL: URL?
+    @State private var showExporter = false
+    @State private var exportDocument: ExportFileDocument?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -72,12 +74,16 @@ struct FilePreviewView: View {
             .toolbar {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
-                    if let shareFileURL {
-                        ShareLink(item: shareFileURL) {
-                            Image(systemName: "square.and.arrow.up")
+                    Button {
+                        if let exportDocument {
+                            self.exportDocument = exportDocument
+                            showExporter = true
                         }
-                        .foregroundStyle(AppColors.accent)
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
                     }
+                    .foregroundStyle(AppColors.accent)
+                    .disabled(exportDocument == nil)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -99,15 +105,34 @@ struct FilePreviewView: View {
                 }
                 #endif
             }
+            .fileExporter(
+                isPresented: $showExporter,
+                document: exportDocument,
+                contentType: exportContentType,
+                defaultFilename: filename
+            ) { _ in }
         }
         .task { await loadFile() }
+    }
+
+    private var exportContentType: UTType {
+        let ext = (filename as NSString).pathExtension.lowercased()
+        switch ext {
+        case "png": return .png
+        case "jpg", "jpeg": return .jpeg
+        case "gif": return .gif
+        case "json": return .json
+        case "pdf": return .pdf
+        case "txt": return .plainText
+        case "md": return .plainText
+        default: return .data
+        }
     }
 
     private func loadFile() async {
         isLoading = true
         error = nil
 
-        // Sanitize path — reject traversal attempts
         let components = path.components(separatedBy: "/")
         guard components.allSatisfy({ $0 != ".." }) else {
             error = "Invalid file path"
@@ -134,33 +159,39 @@ struct FilePreviewView: View {
                 if let data = Data(base64Encoded: base64) {
                     imageData = data
                     isImage = true
-                    writeTempFile(data: data)
+                    exportDocument = ExportFileDocument(data: data)
                 }
             } else {
                 textContent = response.content
-                writeTempFile(text: response.content)
+                if let data = response.content.data(using: .utf8) {
+                    exportDocument = ExportFileDocument(data: data)
+                }
             }
         } catch {
             self.error = "Unable to load file"
         }
         isLoading = false
     }
+}
 
-    private func writeTempFile(data: Data? = nil, text: String? = nil) {
-        let tempDir = FileManager.default.temporaryDirectory
-        let fileURL = tempDir.appendingPathComponent(filename)
-        do {
-            if let data {
-                try data.write(to: fileURL)
-            } else if let text {
-                try text.write(to: fileURL, atomically: true, encoding: .utf8)
-            }
-            shareFileURL = fileURL
-        } catch {
-            // If temp write fails, share button simply won't appear
-        }
+// MARK: - Export Document
+
+struct ExportFileDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.data] }
+    let data: Data
+
+    init(data: Data) { self.data = data }
+
+    init(configuration: ReadConfiguration) throws {
+        data = configuration.file.regularFileContents ?? Data()
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
     }
 }
+
+// MARK: - macOS Save As
 
 extension FilePreviewView {
     #if os(macOS)
