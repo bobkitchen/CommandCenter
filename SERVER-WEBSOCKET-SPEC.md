@@ -403,3 +403,45 @@ The iOS app will detect the WebSocket automatically on next launch — the toolb
 8. **Forward iOS/web messages to Telegram** — when a message arrives from Command Center, send it to the Telegram chat too
 9. **Use consistent roles** — `role: "user"` for all human messages regardless of channel, `role: "assistant"` for all Denny responses
 10. **That's it** — the iOS client accepts messages from all channels with zero filtering
+
+---
+
+## Raw File Download Endpoint (NEW)
+
+The iOS app needs to download binary files (MP3, PDF, etc.) that can't be returned as JSON text/base64. The current `?content=true` endpoint only works for text and images.
+
+### Required: `?download=true` parameter on `/api/files/{path}`
+
+```
+GET /api/files/{path}?download=true[&workspace=workspace-name]
+```
+
+**Behavior:**
+- Read the file from disk at the resolved path
+- Stream the raw bytes directly as the HTTP response body
+- Set `Content-Type` to the file's MIME type (use `mime-types` npm package or similar)
+- Set `Content-Disposition: attachment; filename="original-filename.mp3"`
+- Set `Content-Length` to the file size in bytes
+- Do NOT wrap in JSON — return the raw file data
+
+**Example response headers:**
+```
+HTTP/1.1 200 OK
+Content-Type: audio/mpeg
+Content-Disposition: attachment; filename="Fred again.. & Thomas Bangalter (USB002, Original Mix).mp3"
+Content-Length: 8432156
+```
+
+**Implementation (Express example):**
+```javascript
+// In your /api/files route handler, before the existing content=true logic:
+if (req.query.download === 'true') {
+    const filePath = resolveFilePath(req.params[0], req.query.workspace);
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'File not found' });
+    }
+    return res.download(filePath); // Express handles Content-Type, Content-Disposition, streaming
+}
+```
+
+**That's it** — `res.download()` handles everything. The iOS app already sends `?download=true` and saves the raw response bytes directly to the device's Files app.
