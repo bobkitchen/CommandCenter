@@ -203,14 +203,19 @@ struct FileBrowserView: View {
                 try FileManager.default.removeItem(at: destURL)
             }
 
-            if response.type == "image" {
-                let base64 = response.content
-                    .replacingOccurrences(of: #"^data:[^;]+;base64,"#, with: "", options: .regularExpression)
-                if let data = Data(base64Encoded: base64) {
-                    try data.write(to: destURL)
+            if let content = response.content, !content.isEmpty {
+                if response.type == "image" {
+                    let base64 = content
+                        .replacingOccurrences(of: #"^data:[^;]+;base64,"#, with: "", options: .regularExpression)
+                    if let data = Data(base64Encoded: base64) {
+                        try data.write(to: destURL)
+                    }
+                } else {
+                    try content.write(to: destURL, atomically: true, encoding: .utf8)
                 }
             } else {
-                try response.content.write(to: destURL, atomically: true, encoding: .utf8)
+                showToast("Cannot download this file type")
+                return
             }
 
             showToast("Saved to Files")

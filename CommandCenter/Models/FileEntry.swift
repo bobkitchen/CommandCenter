@@ -42,8 +42,14 @@ struct DirectoryResponse: Codable {
 }
 
 struct FileContentResponse: Codable {
-    let type: String        // "text" or "image"
-    let content: String
+    let type: String?       // "text", "image", "binary", or missing
+    let content: String?    // May be missing for binary/unsupported files
     let filename: String?
     let size: Int?
+    let mimeType: String?
+    let error: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type, content, filename, size, mimeType, error
+    }
 }
