@@ -8,8 +8,16 @@ struct FileBrowserView: View {
     @State private var selectedFile: FileEntry?
     @State private var searchText = ""
     @State private var loadError: String?
+    @State private var toastMessage: String?
 
     private let workspaces = ["workspace", "workspace-sentinel", "workspace-mirror", "workspace-scout"]
+
+    // .urlPathAllowed leaves & + = ? # unencoded — they break URL parsing
+    private static let safePathCharacters: CharacterSet = {
+        var set = CharacterSet.urlPathAllowed
+        set.remove(charactersIn: "&+=?#")
+        return set
+    }()
 
     private var filteredEntries: [FileEntry] {
         if searchText.isEmpty { return entries }
@@ -113,12 +121,39 @@ struct FileBrowserView: View {
                                             selectedFile = entry
                                         }
                                     }
+                                    #if os(iOS)
+                                    .contextMenu {
+                                        if !entry.isDirectory {
+                                            Button {
+                                                Task { await downloadFile(entry) }
+                                            } label: {
+                                                Label("Save to Device", systemImage: "square.and.arrow.down")
+                                            }
+                                        }
+                                    }
+                                    #endif
                             }
                         }
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
                         .refreshable { await loadDirectory() }
                     }
+                }
+
+                // Toast overlay
+                if let toast = toastMessage {
+                    VStack {
+                        Spacer()
+                        Text(toast)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .padding(.bottom, 30)
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .allowsHitTesting(false)
                 }
             }
             .navigationTitle("Files")
@@ -137,6 +172,65 @@ struct FileBrowserView: View {
         .task { await loadDirectory() }
     }
 
+    // MARK: - Download file to Documents
+
+    #if os(iOS)
+    private func downloadFile(_ entry: FileEntry) async {
+        let filePath = (currentPath + [entry.name]).joined(separator: "/")
+        let components = filePath.components(separatedBy: "/")
+
+        guard components.allSatisfy({ $0 != ".." }) else { return }
+
+        let sanitizedPath = components
+            .map { $0.addingPercentEncoding(withAllowedCharacters: Self.safePathCharacters) ?? $0 }
+            .joined(separator: "/")
+
+        var queryItems = [URLQueryItem(name: "content", value: "true")]
+        if workspace != "workspace" {
+            queryItems.append(URLQueryItem(name: "workspace", value: workspace))
+        }
+
+        do {
+            let response: FileContentResponse = try await APIClient.shared.get(
+                "/api/files/\(sanitizedPath)",
+                queryItems: queryItems
+            )
+
+            guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+            let destURL = docs.appendingPathComponent(entry.name)
+
+            if FileManager.default.fileExists(atPath: destURL.path) {
+                try FileManager.default.removeItem(at: destURL)
+            }
+
+            if response.type == "image" {
+                let base64 = response.content
+                    .replacingOccurrences(of: #"^data:[^;]+;base64,"#, with: "", options: .regularExpression)
+                if let data = Data(base64Encoded: base64) {
+                    try data.write(to: destURL)
+                }
+            } else {
+                try response.content.write(to: destURL, atomically: true, encoding: .utf8)
+            }
+
+            showToast("Saved to Files")
+        } catch {
+            showToast("Download failed")
+        }
+    }
+
+    @MainActor
+    private func showToast(_ message: String) {
+        withAnimation { toastMessage = message }
+        Task {
+            try? await Task.sleep(for: .seconds(2))
+            withAnimation { toastMessage = nil }
+        }
+    }
+    #endif
+
+    // MARK: - Load directory
+
     private func loadDirectory() async {
         isLoading = true
         loadError = nil
@@ -147,7 +241,10 @@ struct FileBrowserView: View {
             currentPath = sanitized
         }
 
-        let path = currentPath.isEmpty ? "" : "/" + currentPath.joined(separator: "/")
+        let pathComponents = currentPath
+            .map { $0.addingPercentEncoding(withAllowedCharacters: Self.safePathCharacters) ?? $0 }
+        let path = pathComponents.isEmpty ? "" : "/" + pathComponents.joined(separator: "/")
+
         var queryItems = [URLQueryItem]()
         if workspace != "workspace" {
             queryItems.append(URLQueryItem(name: "workspace", value: workspace))
