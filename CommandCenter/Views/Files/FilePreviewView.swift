@@ -1,5 +1,4 @@
 import SwiftUI
-import UniformTypeIdentifiers
 #if os(macOS)
 import AppKit
 #endif
@@ -14,8 +13,8 @@ struct FilePreviewView: View {
     @State private var isImage = false
     @State private var isLoading = true
     @State private var error: String?
-    @State private var showExporter = false
-    @State private var exportDocument: ExportFileDocument?
+    @State private var tempFileURL: URL?
+    @State private var showShare = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -65,6 +64,15 @@ struct FilePreviewView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
+
+                #if os(iOS)
+                // Invisible VC embedded in the sheet's own hierarchy
+                if let tempFileURL {
+                    SharePresenter(fileURL: tempFileURL, isPresented: $showShare)
+                        .frame(width: 0, height: 0)
+                        .allowsHitTesting(false)
+                }
+                #endif
             }
             .navigationTitle(filename)
             #if os(iOS)
@@ -75,15 +83,12 @@ struct FilePreviewView: View {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        if let exportDocument {
-                            self.exportDocument = exportDocument
-                            showExporter = true
-                        }
+                        showShare = true
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
                     .foregroundStyle(AppColors.accent)
-                    .disabled(exportDocument == nil)
+                    .disabled(tempFileURL == nil)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -105,28 +110,8 @@ struct FilePreviewView: View {
                 }
                 #endif
             }
-            .fileExporter(
-                isPresented: $showExporter,
-                document: exportDocument,
-                contentType: exportContentType,
-                defaultFilename: filename
-            ) { _ in }
         }
         .task { await loadFile() }
-    }
-
-    private var exportContentType: UTType {
-        let ext = (filename as NSString).pathExtension.lowercased()
-        switch ext {
-        case "png": return .png
-        case "jpg", "jpeg": return .jpeg
-        case "gif": return .gif
-        case "json": return .json
-        case "pdf": return .pdf
-        case "txt": return .plainText
-        case "md": return .plainText
-        default: return .data
-        }
     }
 
     private func loadFile() async {
@@ -159,37 +144,61 @@ struct FilePreviewView: View {
                 if let data = Data(base64Encoded: base64) {
                     imageData = data
                     isImage = true
-                    exportDocument = ExportFileDocument(data: data)
+                    writeTempFile(data: data)
                 }
             } else {
                 textContent = response.content
-                if let data = response.content.data(using: .utf8) {
-                    exportDocument = ExportFileDocument(data: data)
-                }
+                writeTempFile(text: response.content)
             }
         } catch {
             self.error = "Unable to load file"
         }
         isLoading = false
     }
-}
 
-// MARK: - Export Document
-
-struct ExportFileDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.data] }
-    let data: Data
-
-    init(data: Data) { self.data = data }
-
-    init(configuration: ReadConfiguration) throws {
-        data = configuration.file.regularFileContents ?? Data()
-    }
-
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        FileWrapper(regularFileWithContents: data)
+    private func writeTempFile(data: Data? = nil, text: String? = nil) {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent(filename)
+        do {
+            if let data {
+                try data.write(to: fileURL)
+            } else if let text {
+                try text.write(to: fileURL, atomically: true, encoding: .utf8)
+            }
+            tempFileURL = fileURL
+        } catch {}
     }
 }
+
+// MARK: - iOS Share Presenter (UIKit-based, works inside sheets)
+
+#if os(iOS)
+struct SharePresenter: UIViewControllerRepresentable {
+    let fileURL: URL
+    @Binding var isPresented: Bool
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+
+    func updateUIViewController(_ vc: UIViewController, context: Context) {
+        if isPresented, vc.presentedViewController == nil {
+            let activityVC = UIActivityViewController(
+                activityItems: [fileURL],
+                applicationActivities: nil
+            )
+            activityVC.popoverPresentationController?.sourceView = vc.view
+            activityVC.popoverPresentationController?.sourceRect = .zero
+            activityVC.completionWithItemsHandler = { _, _, _, _ in
+                isPresented = false
+            }
+            vc.present(activityVC, animated: true)
+        } else if !isPresented, vc.presentedViewController != nil {
+            vc.dismiss(animated: true)
+        }
+    }
+}
+#endif
 
 // MARK: - macOS Save As
 
